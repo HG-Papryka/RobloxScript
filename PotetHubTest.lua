@@ -20,14 +20,27 @@ local function antiAFK()
     end
 end
 
+local function teleportWithTween(partPosition)
+    if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = Player.Character.HumanoidRootPart
+
+        -- Tworzymy ustawienia Tweena dla płynnego ruchu
+        local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out) 
+        local targetPosition = CFrame.new(partPosition.X, fixedYPosition, partPosition.Z)
+
+        -- Tworzymy Tween
+        local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
+        tween:Play()
+        tween.Completed:Wait()
+    end
+end
+
 local function teleportToParts()
     pcall(function()
         for _, part in ipairs(workspace.Bombs:GetChildren()) do
             if table.find(targetNames, part.Name) and ((part.Name == "HalloweenCandy" and getgenv().collect_HalloweenCandy) or (part.Name == "EventIcon" and getgenv().collect_EventIcon) or ((part.Name == "Coin_copper" or part.Name == "Coin_silver" or part.Name == "Coin_gold" or part.Name == "Coin_red" or part.Name == "Coin_purple") and getgenv().collect_Coins) or (part.Name == "HeartPickup" and getgenv().collect_HeartPickup)) then
-                if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-                    Player.Character.HumanoidRootPart.CFrame = CFrame.new(part.Position.X, fixedYPosition, part.Position.Z)
-                    wait(math.random(0.1, 0.5))
-                end
+                teleportWithTween(part.Position)
+                wait(math.random(0.1, 0.5))
             end
         end
     end)
@@ -43,11 +56,9 @@ local function loopTween()
         pcall(function()
             Remotes.chooseOption:FireServer("afk", false)
             for _, pos in ipairs(positions) do
-                if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-                    Player.Character.HumanoidRootPart.CFrame = pos
-                    wait(math.random(0.1, 0.5))
-                    if getgenv().autofarm then teleportToParts() end
-                end
+                teleportWithTween(pos.Position)
+                wait(math.random(0.1, 0.5))
+                if getgenv().autofarm then teleportToParts() end
             end
         end)
         wait(math.random(0.2, 0.5))

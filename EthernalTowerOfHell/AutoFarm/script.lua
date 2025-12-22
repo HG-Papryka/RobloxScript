@@ -24,3 +24,4 @@ game:GetService("StarterGui"):SetCore("SendNotification",{Title="By Potet/ChatGP
 character=player.Character or player.CharacterAdded:Wait()
 hrp=character:WaitForChild("HumanoidRootPart")
 end end end
+-- it might be very outdated so dont exepect much 07/07/2025

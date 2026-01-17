@@ -1,13 +1,12 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService") -- yea ima work with that maybe
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local NotThere = ReplicatedStorage:WaitForChild("NotThere")
-
 
 local autoFarmEnabled = false
 local teleportToPickupsEnabled = true
@@ -18,6 +17,8 @@ local noclipConnection = nil
 local antiAfkConnection = nil
 local skillLoopConnection = nil
 local movementConnection = nil
+local ragdollConnection = nil
+local connections = {}
 
 local fixedY = 273
 local points = {
@@ -31,7 +32,6 @@ local buffer = 20
 local platformY = fixedY - 2
 local respawnInterval = 4
 
-
 local pickupCategories = {
     ["Heals"] = {
         enabled = true,
@@ -40,7 +40,6 @@ local pickupCategories = {
             ["PizzaBox"] = true,			
             ["HeartPickup"] = true,
 		    ["DrumstickBig"] = true	
-            --["FlowerPot"] = true		
         }
     },
     ["Candy (Halloween exclusive)"] = {
@@ -65,15 +64,13 @@ local pickupCategories = {
             ["Coin_gold2"] = true,
 		    ["Coin_purple"] = true,	
             ["Gem"] = true
-
         }
-		    },
+    },
     ["Events"] = {
         enabled = false,
         items = {
             ["EventIcon"] = false
         }
-		
     },
     ["Sodas"] = {
         enabled = false,
@@ -84,7 +81,6 @@ local pickupCategories = {
     }
 }
 
-
 local pickupSettings = {}
 for categoryName, category in pairs(pickupCategories) do
     for itemName, enabled in pairs(category.items) do
@@ -92,73 +88,100 @@ for categoryName, category in pairs(pickupCategories) do
     end
 end
 
+local statusLabel = nil
+
+local function updateStatus(text, color)
+    if statusLabel then
+        statusLabel.Text = "Status: " .. text
+        statusLabel.TextColor3 = color or Color3.fromRGB(180, 180, 180)
+    end
+end
+
+local function isCharacterValid(character)
+    return character 
+        and character.Parent 
+        and character:FindFirstChild("HumanoidRootPart") 
+        and character:FindFirstChild("Humanoid")
+        and character.Humanoid.Health > 0
+end
+
+local function safeTP(rootPart, position)
+    local success = pcall(function()
+        rootPart.CFrame = CFrame.new(position.X, position.Y + 0.9, position.Z)
+    end)
+    return success
+end
 
 local function startAntiAfk()
     if antiAfkConnection then
-        antiAfkConnection:Disconnect()
+        pcall(function() task.cancel(antiAfkConnection) end)
     end
     if movementConnection then
-        movementConnection:Disconnect()
+        pcall(function() task.cancel(movementConnection) end)
     end
     
-
-antiAfkConnection = task.spawn(function()
-    pcall(function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local NotThere = ReplicatedStorage:WaitForChild("NotThere")
-
-        local mt = getrawmetatable(game)
-        local oldNamecall = mt.__namecall
-        local hooked = false
-
+    antiAfkConnection = task.spawn(function()
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        
         while antiAfkEnabled do
-            if not hooked then
-                setreadonly(mt, false)
-                mt.__namecall = newcclosure(function(self, ...)
-                    local method = getnamecallmethod()
-                    local args = {...}
-                    if self == NotThere and method == "FireServer" then
-                        args[1] = false
-                        return oldNamecall(self, unpack(args))
-                    end
-                    return oldNamecall(self, ...)
-                end)
-                setreadonly(mt, true)
-                hooked = true
-
-
-                NotThere:FireServer(false)
-            end
-            task.wait(1) 
-        end
-
-
-        if hooked then
-            setreadonly(mt, false)
-            mt.__namecall = oldNamecall
-            setreadonly(mt, true)
+            local keys = {
+                Enum.KeyCode.W,
+                Enum.KeyCode.A,
+                Enum.KeyCode.S,
+                Enum.KeyCode.D
+            }
+            
+            local randomKey = keys[math.random(1, #keys)]
+            
+            pcall(function()
+                VirtualInputManager:SendKeyEvent(true, randomKey, false, game)
+                task.wait(math.random(1, 3))
+                VirtualInputManager:SendKeyEvent(false, randomKey, false, game)
+            end)
+            
+            task.wait(math.random(20, 40))
         end
     end)
-end)
-
-    
 
     movementConnection = task.spawn(function()
         while antiAfkEnabled do
-            task.wait(600) 
-            pcall(function()
-                local character = Player.Character
-                if character and character:FindFirstChild("HumanoidRootPart") and not autoFarmEnabled then
-                    local rootPart = character.HumanoidRootPart
-                    local humanoid = character:FindFirstChild("Humanoid")
-                    
-                    if humanoid then
-
-                        humanoid:Move(Vector3.new(-1, 0, 0))
-                        task.wait(2)
-                        humanoid:Move(Vector3.new(0, 0, 0)) 
-                    end
+            task.wait(300)
+            
+            if not autoFarmEnabled then
+                local VirtualInputManager = game:GetService("VirtualInputManager")
+                local keys = {Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D}
+                local startTime = tick()
+                
+                while tick() - startTime < 15 do
+                    local randomKey = keys[math.random(1, #keys)]
+                    pcall(function()
+                        VirtualInputManager:SendKeyEvent(true, randomKey, false, game)
+                        task.wait(math.random(1, 3))
+                        VirtualInputManager:SendKeyEvent(false, randomKey, false, game)
+                    end)
+                    task.wait(0.1)
                 end
+            end
+        end
+    end)
+    
+    task.spawn(function()
+        while antiAfkEnabled do
+            pcall(function()
+                local VirtualUser = game:GetService("VirtualUser")
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end)
+            task.wait(120)
+        end
+    end)
+    
+    Player.Idled:Connect(function()
+        if antiAfkEnabled then
+            pcall(function()
+                local VirtualUser = game:GetService("VirtualUser")
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
             end)
         end
     end)
@@ -166,19 +189,18 @@ end
 
 local function stopAntiAfk()
     if antiAfkConnection then
-        task.cancel(antiAfkConnection)
+        pcall(function() task.cancel(antiAfkConnection) end)
         antiAfkConnection = nil
     end
     if movementConnection then
-        task.cancel(movementConnection)
+        pcall(function() task.cancel(movementConnection) end)
         movementConnection = nil
     end
 end
 
-
 local function startSkillLoop()
     if skillLoopConnection then
-        task.cancel(skillLoopConnection)
+        pcall(function() task.cancel(skillLoopConnection) end)
     end
  
     skillLoopConnection = task.spawn(function()
@@ -186,11 +208,10 @@ local function startSkillLoop()
             task.wait(0.3)
             pcall(function()
                 local args = {
-                    [1] = 31, --replace this with SimpleSpy item id "Skilluse"
+                    [1] = 31,
                     [2] = 300,
                     [3] = "skillScript"
                 }
-                local ReplicatedStorage = game:GetService("ReplicatedStorage")
                 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
                 if Remotes then
                     local skillUse = Remotes:FindFirstChild("skillUse")
@@ -205,27 +226,30 @@ end
 
 local function stopSkillLoop()
     if skillLoopConnection then
-        task.cancel(skillLoopConnection)
+        pcall(function() task.cancel(skillLoopConnection) end)
         skillLoopConnection = nil
     end
 end
 
--- PotetHub Dark Style GUI
-local function createPotetHubGUI()
+local function cleanupConnections()
+    for _, conn in ipairs(connections) do
+        pcall(function() conn:Disconnect() end)
+    end
+    connections = {}
+end
 
+local function createPotetHubGUI()
     local existing = PlayerGui:FindFirstChild("SBSAutoFarm")
     if existing then
         existing:Destroy()
     end
     
-
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "SBSAutoFarm"
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     screenGui.Parent = PlayerGui
     
-
     local mainWindow = Instance.new("Frame")
     mainWindow.Name = "MainWindow"
     mainWindow.Size = UDim2.new(0, 300, 0, 500)
@@ -240,7 +264,6 @@ local function createPotetHubGUI()
     windowCorner.CornerRadius = UDim.new(0, 2)
     windowCorner.Parent = mainWindow
     
-
     local titleBar = Instance.new("Frame")
     titleBar.Name = "TitleBar"
     titleBar.Size = UDim2.new(1, 0, 0, 30)
@@ -253,7 +276,6 @@ local function createPotetHubGUI()
     titleCorner.CornerRadius = UDim.new(0, 2)
     titleCorner.Parent = titleBar
     
-
     local titleText = Instance.new("TextLabel")
     titleText.Size = UDim2.new(1, -35, 1, 0)
     titleText.Position = UDim2.new(0, 10, 0, 0)
@@ -265,7 +287,6 @@ local function createPotetHubGUI()
     titleText.TextXAlignment = Enum.TextXAlignment.Left
     titleText.Parent = titleBar
     
-
     local closeButton = Instance.new("TextButton")
     closeButton.Size = UDim2.new(0, 25, 0, 20)
     closeButton.Position = UDim2.new(1, -30, 0, 5)
@@ -281,16 +302,14 @@ local function createPotetHubGUI()
     closeCorner.CornerRadius = UDim.new(0, 2)
     closeCorner.Parent = closeButton
     
-
-    closeButton.MouseEnter:Connect(function()
+    table.insert(connections, closeButton.MouseEnter:Connect(function()
         closeButton.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
-    end)
-    closeButton.MouseLeave:Connect(function()
+    end))
+    table.insert(connections, closeButton.MouseLeave:Connect(function()
         closeButton.BackgroundColor3 = Color3.fromRGB(70, 80, 100)
-    end)
+    end))
     
-
-    closeButton.MouseButton1Click:Connect(function()
+    table.insert(connections, closeButton.MouseButton1Click:Connect(function()
         if autoFarmEnabled then
             autoFarmEnabled = false
             stopAutoFarm()
@@ -303,23 +322,23 @@ local function createPotetHubGUI()
             autoLoopSkillEnabled = false
             stopSkillLoop()
         end
+        cleanupConnections()
         screenGui:Destroy()
-    end)
+    end))
     
-
     local dragging = false
     local dragStart = nil
     local startPos = nil
     
-    titleBar.InputBegan:Connect(function(input)
+    table.insert(connections, titleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
             startPos = mainWindow.Position
         end
-    end)
+    end))
     
-    UserInputService.InputChanged:Connect(function(input)
+    table.insert(connections, UserInputService.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
             local delta = input.Position - dragStart
             mainWindow.Position = UDim2.new(
@@ -329,22 +348,20 @@ local function createPotetHubGUI()
                 startPos.Y.Offset + delta.Y
             )
         end
-    end)
+    end))
     
-    UserInputService.InputEnded:Connect(function(input)
+    table.insert(connections, UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
         end
-    end)
+    end))
     
-
     local contentFrame = Instance.new("Frame")
     contentFrame.Size = UDim2.new(1, -20, 1, -50)
     contentFrame.Position = UDim2.new(0, 10, 0, 40)
     contentFrame.BackgroundTransparency = 1
     contentFrame.Parent = mainWindow
     
-
     local farmHeader = Instance.new("TextLabel")
     farmHeader.Size = UDim2.new(1, 0, 0, 20)
     farmHeader.Position = UDim2.new(0, 0, 0, 0)
@@ -356,7 +373,6 @@ local function createPotetHubGUI()
     farmHeader.TextXAlignment = Enum.TextXAlignment.Left
     farmHeader.Parent = contentFrame
     
-
     local farmButton = Instance.new("TextButton")
     farmButton.Size = UDim2.new(1, 0, 0, 32)
     farmButton.Position = UDim2.new(0, 0, 0, 25)
@@ -387,7 +403,6 @@ local function createPotetHubGUI()
     farmCheckmark.Font = Enum.Font.GothamBold
     farmCheckmark.Parent = farmButton
     
-
     local settingsHeader = Instance.new("TextLabel")
     settingsHeader.Size = UDim2.new(1, 0, 0, 20)
     settingsHeader.Position = UDim2.new(0, 0, 0, 75)
@@ -409,7 +424,6 @@ local function createPotetHubGUI()
     dropdownArrow.Font = Enum.Font.Gotham
     dropdownArrow.Parent = contentFrame
     
-
     local pickupListFrame = Instance.new("Frame")
     pickupListFrame.Size = UDim2.new(1, 0, 0, 180)
     pickupListFrame.Position = UDim2.new(0, 0, 0, 100)
@@ -431,7 +445,6 @@ local function createPotetHubGUI()
     scrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
     scrollFrame.Parent = pickupListFrame
     
-
     local yPos = 5
     
     for categoryName, category in pairs(pickupCategories) do
@@ -454,14 +467,14 @@ local function createPotetHubGUI()
             categoryCorner.CornerRadius = UDim.new(0, 3)
             categoryCorner.Parent = categoryButton
             
-            categoryButton.MouseEnter:Connect(function()
+            table.insert(connections, categoryButton.MouseEnter:Connect(function()
                 if not category.enabled then
                     categoryButton.BackgroundColor3 = Color3.fromRGB(55, 65, 85)
                 end
-            end)
-            categoryButton.MouseLeave:Connect(function()
+            end))
+            table.insert(connections, categoryButton.MouseLeave:Connect(function()
                 categoryButton.BackgroundColor3 = category.enabled and Color3.fromRGB(65, 75, 95) or Color3.fromRGB(50, 60, 80)
-            end)
+            end))
             
             local categoryCheckmark = Instance.new("TextLabel")
             categoryCheckmark.Size = UDim2.new(0, 20, 1, 0)
@@ -484,7 +497,7 @@ local function createPotetHubGUI()
             categoryLabel.TextXAlignment = Enum.TextXAlignment.Left
             categoryLabel.Parent = categoryButton
             
-            categoryButton.MouseButton1Click:Connect(function()
+            table.insert(connections, categoryButton.MouseButton1Click:Connect(function()
                 category.enabled = not category.enabled
                 
                 for itemName, _ in pairs(category.items) do
@@ -498,7 +511,7 @@ local function createPotetHubGUI()
                     categoryCheckmark.Text = ""
                     categoryButton.BackgroundColor3 = Color3.fromRGB(50, 60, 80)
                 end
-            end)
+            end))
             
             yPos = yPos + 38
         end
@@ -506,7 +519,6 @@ local function createPotetHubGUI()
     
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPos)
     
-    -- Other Features Section
     local otherHeader = Instance.new("TextLabel")
     otherHeader.Size = UDim2.new(1, 0, 0, 20)
     otherHeader.Position = UDim2.new(0, 0, 0, 290)
@@ -529,7 +541,6 @@ local function createPotetHubGUI()
     otherCorner.CornerRadius = UDim.new(0, 3)
     otherCorner.Parent = otherFrame
     
-
     local antiAfkButton = Instance.new("TextButton")
     antiAfkButton.Size = UDim2.new(1, -10, 0, 32)
     antiAfkButton.Position = UDim2.new(0, 5, 0, 5)
@@ -563,7 +574,7 @@ local function createPotetHubGUI()
     antiAfkLabel.TextXAlignment = Enum.TextXAlignment.Left
     antiAfkLabel.Parent = antiAfkButton
     
-    antiAfkButton.MouseButton1Click:Connect(function()
+    table.insert(connections, antiAfkButton.MouseButton1Click:Connect(function()
         antiAfkEnabled = not antiAfkEnabled
         
         if antiAfkEnabled then
@@ -575,9 +586,8 @@ local function createPotetHubGUI()
             antiAfkButton.BackgroundColor3 = Color3.fromRGB(50, 60, 80)
             stopAntiAfk()
         end
-    end)
+    end))
     
-
     local skillLoopButton = Instance.new("TextButton")
     skillLoopButton.Size = UDim2.new(1, -10, 0, 32)
     skillLoopButton.Position = UDim2.new(0, 5, 0, 42)
@@ -611,7 +621,7 @@ local function createPotetHubGUI()
     skillLoopLabel.TextXAlignment = Enum.TextXAlignment.Left
     skillLoopLabel.Parent = skillLoopButton
     
-    skillLoopButton.MouseButton1Click:Connect(function()
+    table.insert(connections, skillLoopButton.MouseButton1Click:Connect(function()
         autoLoopSkillEnabled = not autoLoopSkillEnabled
         
         if autoLoopSkillEnabled then
@@ -623,23 +633,21 @@ local function createPotetHubGUI()
             skillLoopButton.BackgroundColor3 = Color3.fromRGB(50, 60, 80)
             stopSkillLoop()
         end
-    end)
+    end))
     
-
-    local statusLabel = Instance.new("TextLabel")
-    statusLabel.Size = UDim2.new(1, 0, 0, 16)
-    statusLabel.Position = UDim2.new(0, 0, 1, -20)
-    statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = "Status: Inactive"
-    statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-    statusLabel.TextSize = 10
-    statusLabel.Font = Enum.Font.Gotham
-    statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-    statusLabel.Parent = contentFrame
+    local status = Instance.new("TextLabel")
+    status.Size = UDim2.new(1, 0, 0, 16)
+    status.Position = UDim2.new(0, 0, 1, -20)
+    status.BackgroundTransparency = 1
+    status.Text = "Status: Inactive"
+    status.TextColor3 = Color3.fromRGB(180, 180, 180)
+    status.TextSize = 10
+    status.Font = Enum.Font.Gotham
+    status.TextXAlignment = Enum.TextXAlignment.Left
+    status.Parent = contentFrame
     
-    return screenGui, farmButton, statusLabel, farmCheckmark
+    return screenGui, farmButton, status, farmCheckmark
 end
-
 
 local function calculateBounds()
     local minX, maxX = math.huge, -math.huge
@@ -697,7 +705,7 @@ end
 
 local function waitForCharacter()
     local character = Player.Character
-    while not character or not character:FindFirstChild("HumanoidRootPart") do
+    while not isCharacterValid(character) do
         character = Player.Character
         task.wait(1)
     end
@@ -710,34 +718,18 @@ local function teleportToPickups(character)
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if not rootPart or not character.Parent then return end
     
-    local allParts = Workspace:GetDescendants()
+    local bombsFolder = Workspace:FindFirstChild("Bombs")
+    if not bombsFolder then return end
     
-    for _, obj in ipairs(allParts) do
+    for _, obj in ipairs(bombsFolder:GetChildren()) do
         if not character.Parent or not rootPart.Parent or not autoFarmEnabled then
             break
         end
         
         if obj:IsA("BasePart") and pickupSettings[obj.Name] then
-            -- Special check for Pizza and Gem
-            if obj.Name == "Pizza" or obj.Name == "Gem" then
-                local isInBombs = false
-                local parent = obj.Parent
-                while parent do
-                    if parent.Name == "Bombs" then
-                        isInBombs = true
-                        break
-                    end
-                    parent = parent.Parent
-                end
-                
-                if not isInBombs then
-                    continue
-                end
-            end
-            
             local distance = (rootPart.Position - obj.Position).Magnitude
             if distance < 300 then
-                rootPart.CFrame = CFrame.new(obj.Position.X, obj.Position.Y + 0.9, obj.Position.Z)
+                safeTP(rootPart, obj.Position)
                 task.wait(0.3)
             end
         end
@@ -746,8 +738,27 @@ end
 
 local function startAutoFarm()
     if currentLoop then
-        task.cancel(currentLoop)
+        pcall(function() task.cancel(currentLoop) end)
     end
+    
+    if ragdollConnection then
+        pcall(function() task.cancel(ragdollConnection) end)
+    end
+    
+    ragdollConnection = task.spawn(function()
+        while autoFarmEnabled do
+            task.wait(0.1)
+            pcall(function()
+                local ragdollRemote = ReplicatedStorage:FindFirstChild("Remotes")
+                if ragdollRemote then
+                    ragdollRemote = ragdollRemote:FindFirstChild("Ragdoll")
+                    if ragdollRemote then
+                        ragdollRemote:FireServer("off")
+                    end
+                end
+            end)
+        end
+    end)
     
     currentLoop = task.spawn(function()
         local loopCount = 0
@@ -758,7 +769,7 @@ local function startAutoFarm()
             
             local rootPart = character:WaitForChild("HumanoidRootPart")
             
-            loopCount += 1
+            loopCount = loopCount + 1
             
             if loopCount % respawnInterval == 1 then
                 createPlatform()
@@ -767,7 +778,7 @@ local function startAutoFarm()
             for _, point in ipairs(points) do
                 if not character.Parent or not autoFarmEnabled then break end
                 
-                rootPart.CFrame = CFrame.new(point.X, point.Y + 3, point.Z)
+                safeTP(rootPart, point)
                 task.wait(0.25)
             end
             
@@ -782,8 +793,13 @@ end
 
 function stopAutoFarm()
     if currentLoop then
-        task.cancel(currentLoop)
+        pcall(function() task.cancel(currentLoop) end)
         currentLoop = nil
+    end
+    
+    if ragdollConnection then
+        pcall(function() task.cancel(ragdollConnection) end)
+        ragdollConnection = nil
     end
     
     if noclipConnection then
@@ -797,24 +813,21 @@ function stopAutoFarm()
     end
 end
 
-
-local gui, farmButton, statusLabel, farmCheckmark = createPotetHubGUI()
-
+local gui, farmButton, status, farmCheckmark = createPotetHubGUI()
+statusLabel = status
 
 if antiAfkEnabled then
     startAntiAfk()
 end
 
-
-farmButton.MouseButton1Click:Connect(function()
+table.insert(connections, farmButton.MouseButton1Click:Connect(function()
     autoFarmEnabled = not autoFarmEnabled
     
     if autoFarmEnabled then
         farmButton.Text = "▷ Autofarm"
         farmButton.BackgroundColor3 = Color3.fromRGB(65, 75, 95)
         farmCheckmark.Text = "✓"
-        statusLabel.Text = "Status: Active - Farming..."
-        statusLabel.TextColor3 = Color3.fromRGB(120, 220, 120)
+        updateStatus("Active - Farming...", Color3.fromRGB(120, 220, 120))
         
         setupNoclip()
         startAutoFarm()
@@ -822,11 +835,8 @@ farmButton.MouseButton1Click:Connect(function()
         farmButton.Text = "▷ Autofarm"
         farmButton.BackgroundColor3 = Color3.fromRGB(60, 70, 90)
         farmCheckmark.Text = ""
-        statusLabel.Text = "Status: Inactive"
-        statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+        updateStatus("Inactive", Color3.fromRGB(180, 180, 180))
         
         stopAutoFarm()
     end
-end)
-
-print("PotetHub - SBS loaded successfully!")
+end))

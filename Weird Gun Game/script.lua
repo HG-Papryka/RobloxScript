@@ -14,7 +14,17 @@ getgenv().lt = {
 	["damage"] = 1e9999999999999999999999999999999999,
 	["spread"] = 0,
 	["recoilMax"] = Vector2.new(0,0),
-	["recoilMin"] = Vector2.new(0,0)
+	["recoilMin"] = Vector2.new(0,0),
+	["equipTime"] = 0,
+	["eyeToSightDistance"] = 50,
+	["fireMode"] = "Auto",
+	["class"] = "Assault Rifle",
+	["movementSpeedFactor"] = 10,
+	["spreadADS"] = 0,
+	["supressionFactor"] = 1e9999999999999999999999999999999999,
+	["timeToAim"] = 0,
+	["zoom"] = 10,
+	["isShotgun"] = false
 }
 
 if not(getgenv().work) then
@@ -83,7 +93,7 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-	while task.wait(30) do
+	while task.wait(60) do
 		local char = LocalPlayer.Character
 		if not char then continue end
 		
@@ -108,18 +118,6 @@ task.spawn(function()
 					math.random(-5, 5)
 				)
 				hrp.CFrame = CFrame.new(targetPos.Position + offset)
-			end
-		end
-	end
-end)
-
-task.spawn(function()
-	while task.wait(30) do
-		local char = LocalPlayer.Character
-		if char then
-			local head = char:FindFirstChild("Head")
-			if head then
-				head.CFrame = head.CFrame * CFrame.Angles(math.rad(-45), 0, 0)
 			end
 		end
 	end

@@ -69,19 +69,21 @@ local function equipTool()
 end
 
 task.spawn(function()
-	while task.wait(3) do
+	while task.wait(1) do
 		pcall(function()
 			local spawnButton = LocalPlayer.PlayerGui.BoardGui.Customize.BottomButtons.SPAWN
 			if spawnButton and spawnButton.Visible then
-				task.wait(0.2)
-				firesignal(spawnButton.MouseButton1Click)
+				for i = 1, 3 do
+					task.wait(0.1)
+					firesignal(spawnButton.MouseButton1Click)
+				end
 			end
 		end)
 	end
 end)
 
 task.spawn(function()
-	while task.wait(5) do
+	while task.wait(2) do
 		pcall(function()
 			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
 			task.wait(0.1)
@@ -91,7 +93,7 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-	while task.wait(120) do
+	while task.wait(60) do
 		pcall(function()
 			local char = LocalPlayer.Character
 			if not char then return end
@@ -150,7 +152,7 @@ task.spawn(function()
 end)
 
 local lastShot = 0
-local SHOOT_COOLDOWN = 0.15
+local SHOOT_COOLDOWN = 0.05
 
 RunService.RenderStepped:Connect(function()
 	if os.clock() - lastShot < SHOOT_COOLDOWN then return end
@@ -162,31 +164,31 @@ RunService.RenderStepped:Connect(function()
 	if not tool then return end
 	
 	local targets = getTargets()
-	if #targets == 0 then return end
 	
-	local tgt = targets[1]
-	
-	pcall(function()
-		local pos = tgt.part.Position
-		local dir = (pos - Camera.CFrame.Position).Unit
-		local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
-		
-		local args = {
-			os.clock(),
-			tool,
-			cf,
-			true,
-			{
-				["1"] = {
-					tgt.hum,
-					false,
-					true,
-					100
+	for _, tgt in ipairs(targets) do
+		pcall(function()
+			local pos = tgt.part.Position
+			local dir = (pos - Camera.CFrame.Position).Unit
+			local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
+			
+			local args = {
+				os.clock(),
+				tool,
+				cf,
+				true,
+				{
+					["1"] = {
+						tgt.hum,
+						false,
+						true,
+						100
+					}
 				}
 			}
-		}
-		
-		ShootEvent:FireServer(unpack(args))
-		lastShot = os.clock()
-	end)
+			
+			ShootEvent:FireServer(unpack(args))
+		end)
+	end
+	
+	lastShot = os.clock()
 end)

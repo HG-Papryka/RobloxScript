@@ -9,9 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
 
 getgenv().lt = {
-	["_ammo"] = 1e9999999999999999999999999999999999,
-	["magazineSize"] = 1e9999999999999999999999999999999999,
-	["damage"] = 1e9999999999999999999999999999999999,
+	["_ammo"] = 9999,
+	["magazineSize"] = 9999,
+	["damage"] = 9999,
 	["spread"] = 0,
 	["recoilMax"] = Vector2.new(0,0),
 	["recoilMin"] = Vector2.new(0,0),
@@ -21,7 +21,7 @@ getgenv().lt = {
 	["class"] = "Assault Rifle",
 	["movementSpeedFactor"] = 10,
 	["spreadADS"] = 0,
-	["supressionFactor"] = 1e9999999999999999999999999999999999,
+	["supressionFactor"] = 9999,
 	["timeToAim"] = 0,
 	["zoom"] = 10,
 	["isShotgun"] = false
@@ -69,21 +69,19 @@ local function equipTool()
 end
 
 task.spawn(function()
-	while task.wait(1) do
+	while task.wait(3) do
 		pcall(function()
 			local spawnButton = LocalPlayer.PlayerGui.BoardGui.Customize.BottomButtons.SPAWN
 			if spawnButton and spawnButton.Visible then
-				for i = 1, 3 do
-					task.wait(0.1)
-					firesignal(spawnButton.MouseButton1Click)
-				end
+				task.wait(0.2)
+				firesignal(spawnButton.MouseButton1Click)
 			end
 		end)
 	end
 end)
 
 task.spawn(function()
-	while task.wait(2) do
+	while task.wait(5) do
 		pcall(function()
 			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
 			task.wait(0.1)
@@ -93,33 +91,35 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-	while task.wait(60) do
-		local char = LocalPlayer.Character
-		if not char then continue end
-		
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if not hrp then continue end
-		
-		local targetsFolder = Workspace:FindFirstChild("Targets")
-		if not targetsFolder then continue end
-		
-		local matchTargets = targetsFolder:FindFirstChild("MatchTargets")
-		if not matchTargets then continue end
-		
-		local targetList = matchTargets:GetChildren()
-		if #targetList > 0 then
-			local randomTarget = targetList[math.random(1, #targetList)]
-			local targetPos = randomTarget:FindFirstChild("HumanoidRootPart") or randomTarget:FindFirstChild("Torso")
+	while task.wait(120) do
+		pcall(function()
+			local char = LocalPlayer.Character
+			if not char then return end
 			
-			if targetPos then
-				local offset = Vector3.new(
-					math.random(-5, 5),
-					0,
-					math.random(-5, 5)
-				)
-				hrp.CFrame = CFrame.new(targetPos.Position + offset)
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			if not hrp then return end
+			
+			local targetsFolder = Workspace:FindFirstChild("Targets")
+			if not targetsFolder then return end
+			
+			local matchTargets = targetsFolder:FindFirstChild("MatchTargets")
+			if not matchTargets then return end
+			
+			local targetList = matchTargets:GetChildren()
+			if #targetList > 0 then
+				local randomTarget = targetList[math.random(1, #targetList)]
+				local targetPos = randomTarget:FindFirstChild("HumanoidRootPart") or randomTarget:FindFirstChild("Torso")
+				
+				if targetPos then
+					local offset = Vector3.new(
+						math.random(-5, 5),
+						0,
+						math.random(-5, 5)
+					)
+					hrp.CFrame = CFrame.new(targetPos.Position + offset)
+				end
 			end
-		end
+		end)
 	end
 end)
 
@@ -149,7 +149,12 @@ task.spawn(function()
 	end
 end)
 
+local lastShot = 0
+local SHOOT_COOLDOWN = 0.15
+
 RunService.RenderStepped:Connect(function()
+	if os.clock() - lastShot < SHOOT_COOLDOWN then return end
+	
 	local char = LocalPlayer.Character
 	if not char then return end
 	
@@ -157,29 +162,31 @@ RunService.RenderStepped:Connect(function()
 	if not tool then return end
 	
 	local targets = getTargets()
+	if #targets == 0 then return end
 	
-	for _, tgt in ipairs(targets) do
-		pcall(function()
-			local pos = tgt.part.Position
-			local dir = (pos - Camera.CFrame.Position).Unit
-			local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
-			
-			local args = {
-				os.clock(),
-				tool,
-				cf,
-				true,
-				{
-					["1"] = {
-						tgt.hum,
-						false,
-						true,
-						100
-					}
+	local tgt = targets[1]
+	
+	pcall(function()
+		local pos = tgt.part.Position
+		local dir = (pos - Camera.CFrame.Position).Unit
+		local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
+		
+		local args = {
+			os.clock(),
+			tool,
+			cf,
+			true,
+			{
+				["1"] = {
+					tgt.hum,
+					false,
+					true,
+					100
 				}
 			}
-			
-			ShootEvent:FireServer(unpack(args))
-		end)
-	end
+		}
+		
+		ShootEvent:FireServer(unpack(args))
+		lastShot = os.clock()
+	end)
 end)

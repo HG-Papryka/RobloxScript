@@ -1,3 +1,4 @@
+-- do not fucking use it idfk if its safe but u can skid ts for u vibe coding or some shit
 local player=game.Players.LocalPlayer
 local character=player.Character or player.CharacterAdded:Wait()
 local hrp=character:WaitForChild("HumanoidRootPart")

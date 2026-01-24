@@ -1,4 +1,4 @@
-this is list what script do if i ain forget about it
+this is list what script do if i ain forget about it (im dyslexic btw sorry)
 
 etoh : ethernal tower of hell (PATCHED)
 it have 2 version one is autofarm for like all towers 

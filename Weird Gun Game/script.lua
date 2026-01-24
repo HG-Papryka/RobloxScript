@@ -127,6 +127,12 @@ end)
 
 local function getTargets()
 	local targets = {}
+	local char = LocalPlayer.Character
+	if not char then return targets end
+	
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return targets end
+	
 	local targetsFolder = Workspace:FindFirstChild("Targets")
 	if not targetsFolder then return targets end
 	
@@ -138,9 +144,12 @@ local function getTargets()
 		local torso = target:FindFirstChild("Torso") or target:FindFirstChild("HumanoidRootPart")
 		
 		if h and torso and h.Health > 0 then
-			table.insert(targets, {hum = h, part = torso})
+			local distance = (hrp.Position - torso.Position).Magnitude
+			table.insert(targets, {hum = h, part = torso, dist = distance})
 		end
 	end
+	
+	table.sort(targets, function(a, b) return a.dist < b.dist end)
 	
 	return targets
 end
@@ -151,22 +160,20 @@ task.spawn(function()
 	end
 end)
 
-local lastShot = 0
-local SHOOT_COOLDOWN = 0.05
-
-RunService.RenderStepped:Connect(function()
-	if os.clock() - lastShot < SHOOT_COOLDOWN then return end
-	
-	local char = LocalPlayer.Character
-	if not char then return end
-	
-	local tool = char:FindFirstChildOfClass("Tool")
-	if not tool then return end
-	
-	local targets = getTargets()
-	
-	for _, tgt in ipairs(targets) do
+task.spawn(function()
+	while task.wait(0.03) do
 		pcall(function()
+			local char = LocalPlayer.Character
+			if not char then return end
+			
+			local tool = char:FindFirstChildOfClass("Tool")
+			if not tool then return end
+			
+			local targets = getTargets()
+			if #targets == 0 then return end
+			
+			local tgt = targets[1]
+			
 			local pos = tgt.part.Position
 			local dir = (pos - Camera.CFrame.Position).Unit
 			local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
@@ -189,6 +196,4 @@ RunService.RenderStepped:Connect(function()
 			ShootEvent:FireServer(unpack(args))
 		end)
 	end
-	
-	lastShot = os.clock()
 end)

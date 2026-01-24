@@ -160,40 +160,43 @@ task.spawn(function()
 	end
 end)
 
-task.spawn(function()
-	while task.wait(0.03) do
-		pcall(function()
-			local char = LocalPlayer.Character
-			if not char then return end
-			
-			local tool = char:FindFirstChildOfClass("Tool")
-			if not tool then return end
-			
-			local targets = getTargets()
-			if #targets == 0 then return end
-			
-			local tgt = targets[1]
-			
-			local pos = tgt.part.Position
-			local dir = (pos - Camera.CFrame.Position).Unit
-			local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
-			
-			local args = {
-				os.clock(),
-				tool,
-				cf,
-				true,
-				{
-					["1"] = {
-						tgt.hum,
-						false,
-						true,
-						100
-					}
+local lastShot = 0
+
+RunService.RenderStepped:Connect(function()
+	if os.clock() - lastShot < 0.03 then return end
+	
+	local char = LocalPlayer.Character
+	if not char then return end
+	
+	local tool = char:FindFirstChildOfClass("Tool")
+	if not tool then return end
+	
+	local targets = getTargets()
+	if #targets == 0 then return end
+	
+	local tgt = targets[1]
+	
+	pcall(function()
+		local pos = tgt.part.Position
+		local dir = (pos - Camera.CFrame.Position).Unit
+		local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
+		
+		local args = {
+			os.clock(),
+			tool,
+			cf,
+			true,
+			{
+				["1"] = {
+					tgt.hum,
+					false,
+					true,
+					100
 				}
 			}
-			
-			ShootEvent:FireServer(unpack(args))
-		end)
-	end
+		}
+		
+		ShootEvent:FireServer(unpack(args))
+		lastShot = os.clock()
+	end)
 end)

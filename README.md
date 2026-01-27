@@ -23,6 +23,10 @@ YouVsHomer (it might be patch very soon but not now 1/24/2026)
 auto buy skin by brude force atacking id of skin so u can buy skins that was back back then (i bet u can do it easyer)
 and auto farm that teleport u to winpad WOWOWO
 
+NEW SCRIPT (1/28/2026) MY BDAY
+[CULTIST!] Terraria Boss Battles: REMASTERED
+just buy all gears for -inf coins so u get all gear
+
 
 other info:
 yes u can copy or steal some part i might be even happy if someone will say he stoll that code from fucking vibe coder

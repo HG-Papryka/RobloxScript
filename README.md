@@ -25,7 +25,7 @@ and auto farm that teleport u to winpad WOWOWO
 
 NEW SCRIPT (1/28/2026) MY BDAY
 [CULTIST!] Terraria Boss Battles: REMASTERED
-just buy all gears for -inf coins so u get all gear
+just buy all gears for inf coins so u get all gear
 
 
 other info:

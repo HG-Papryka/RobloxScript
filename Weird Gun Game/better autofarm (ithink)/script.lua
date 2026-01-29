@@ -9,10 +9,10 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
 
-local BLACKLIST = {"donadosPL", "krzys123six"}
+local BLACKLIST = {"krzys123six", "donadosPL"}
 
 getgenv().lt = {
-	["damage"] = 67
+	["damage"] = 67 -- this is only visual btw
 }
 
 if not(getgenv().work) then
@@ -248,7 +248,7 @@ local function detectMapAndGetSpot()
 	local trussCount = #trusses
 	
 	if trussCount == 1 then
-		return nil
+		return {pos = Vector3.new(-55, 1133, -270), noclip = true}
 	elseif trussCount == 4 then
 		local hasNeonRed = false
 		for _, truss in ipairs(trusses) do

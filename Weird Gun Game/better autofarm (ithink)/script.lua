@@ -110,4 +110,291 @@ clickDetector.Text = ""
 clickDetector.ZIndex = 3
 clickDetector.Parent = frame
 
-clickDetector.MouseButton1Click:Connect(funct
+clickDetector.MouseButton1Click:Connect(function()
+	scriptEnabled = not scriptEnabled
+	if scriptEnabled then
+		mainLabel.TextColor3 = COLOR1
+	else
+		mainLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
+	end
+end)
+
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+frame.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+task.spawn(function()
+	local colors = {COLOR1, COLOR2, COLOR3, COLOR2, COLOR1}
+	local idx = 1
+	while true do
+		if scriptEnabled then
+			local nextIdx = (idx % #colors) + 1
+			local tween = TweenService:Create(mainLabel, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextColor3 = colors[nextIdx]})
+			tween:Play()
+			tween.Completed:Wait()
+			idx = nextIdx
+		else
+			task.wait(0.5)
+		end
+	end
+end)
+
+local dotCount = 0
+local shootingTarget = ""
+local isShootingState = false
+local importantStatusActive = false
+
+task.spawn(function()
+	while true do
+		task.wait(0.4)
+		if isShootingState and scriptEnabled and not importantStatusActive then
+			dotCount = (dotCount % 3) + 1
+			local dots = string.rep(".", dotCount)
+			local spaces = string.rep(" ", 3 - dotCount)
+			statusLabel.Text = "shooting " .. shootingTarget .. " " .. dots .. spaces
+		end
+	end
+end)
+
+local function updateStatus(text, important)
+	if importantStatusActive then return end
+	if important then
+		importantStatusActive = true
+		isShootingState = false
+		statusLabel.Text = "status: " .. text
+		statusLabel.TextColor3 = Color3.fromHex("f4d6bc")
+		task.spawn(function()
+			task.wait(3)
+			statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+			importantStatusActive = false
+		end)
+	else
+		isShootingState = false
+		statusLabel.Text = "status: " .. text
+	end
+end
+
+local function setShootingStatus(targetName)
+	if importantStatusActive then return end
+	isShootingState = true
+	shootingTarget = targetName
+end
+
+local function equipTool()
+	local char = LocalPlayer.Character
+	if not char then return end
+	local tool = char:FindFirstChildOfClass("Tool")
+	if tool then
+		for i,v in getgenv().lt do tool:SetAttribute(i,v) end
+		return
+	end
+	local backpack = LocalPlayer:FindFirstChild("Backpack")
+	if backpack then
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				char.Humanoid:EquipTool(item)
+				for i,v in getgenv().lt do item:SetAttribute(i,v) end
+				break
+			end
+		end
+	end
+end
+
+task.spawn(function()
+	while task.wait(1) do
+		pcall(function()
+			local spawnButton = LocalPlayer.PlayerGui.BoardGui.Customize.BottomButtons.SPAWN
+			if spawnButton and spawnButton.Visible then
+				for i = 1, 3 do
+					task.wait(0.1)
+					firesignal(spawnButton.MouseButton1Click)
+				end
+			end
+		end)
+	end
+end)
+
+task.spawn(function()
+	while task.wait(2) do
+		pcall(function()
+			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+			task.wait(0.1)
+			VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+		end)
+	end
+end)
+
+task.spawn(function()
+	task.wait(180)
+	updateStatus("auto server hopping...", true)
+	task.wait(3)
+	TeleportService:Teleport(game.PlaceId, LocalPlayer)
+end)
+
+local function getTargets()
+	local targets = {}
+	local char = LocalPlayer.Character
+	if not char then return targets end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return targets end
+	local targetsFolder = Workspace:FindFirstChild("Targets")
+	if not targetsFolder then return targets end
+	local matchTargets = targetsFolder:FindFirstChild("MatchTargets")
+	if not matchTargets then return targets end
+	for _, target in ipairs(matchTargets:GetChildren()) do
+		local h = target:FindFirstChild("Humanoid")
+		local head = target:FindFirstChild("Head")
+		if h and head and h.Health > 0 then
+			local distance = (hrp.Position - head.Position).Magnitude
+			table.insert(targets, {hum = h, part = head, dist = distance})
+		end
+	end
+	table.sort(targets, function(a, b) return a.dist < b.dist end)
+	return targets
+end
+
+local function detectMapAndGetSpot()
+	local mapFolder = Workspace:FindFirstChild("Map")
+	if not mapFolder then return nil end
+	local trussesFolder = mapFolder:FindFirstChild("Trusses")
+	if not trussesFolder then
+		return {pos = Vector3.new(-416, 1267, -274), noclip = false}
+	end
+	local trusses = trussesFolder:GetChildren()
+	local trussCount = #trusses
+	if trussCount == 1 then
+		return {pos = Vector3.new(-55, 1133, -270), noclip = true}
+	elseif trussCount == 4 then
+		local hasNeonRed = false
+		for _, truss in ipairs(trusses) do
+			if truss:IsA("BasePart") and truss.Material == Enum.Material.Neon and truss.Color == Color3.fromRGB(107, 0, 0) then
+				hasNeonRed = true
+				break
+			end
+		end
+		if hasNeonRed then
+			return {pos = Vector3.new(-2279, 678, -1174), noclip = true}
+		else
+			return {pos = Vector3.new(-11, 93, 15), noclip = true}
+		end
+	elseif trussCount == 7 then
+		return {pos = Vector3.new(-381, 668, -456), noclip = false}
+	elseif trussCount == 9 then
+		return {pos = Vector3.new(-416, 1267, -274), noclip = false}
+	elseif trussCount == 11 then
+		return {pos = Vector3.new(-680, 39, -489), noclip = true}
+	elseif trussCount == 14 then
+		return {pos = Vector3.new(375, 765, 346), noclip = false}
+	elseif trussCount == 28 then
+		return {pos = Vector3.new(100, 1677, 339), noclip = false}
+	elseif trussCount >= 40 then
+		return {pos = Vector3.new(-8, 308, 2515), noclip = true}
+	else
+		return nil
+	end
+end
+
+task.spawn(function()
+	while task.wait(2) do
+		if scriptEnabled then equipTool() end
+	end
+end)
+
+task.spawn(function()
+	while task.wait(30) do
+		if not scriptEnabled then continue end
+		pcall(function()
+			local mapData = detectMapAndGetSpot()
+			if not mapData then
+				updateStatus("bad map - server hopping...", true)
+				task.wait(3)
+				TeleportService:Teleport(game.PlaceId, LocalPlayer)
+				return
+			end
+			local char = LocalPlayer.Character
+			if not char then return end
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			if not hrp then return end
+			hrp.CFrame = CFrame.new(mapData.pos)
+			hrp.Velocity = Vector3.new(0, 0, 0)
+			hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+		end)
+	end
+end)
+
+local lastShot = 0
+local shotsOnTarget = {}
+local currentTarget = nil
+
+RunService.RenderStepped:Connect(function()
+	if not scriptEnabled then return end
+	local fireDelay = math.random(50, 100) / 1000
+	if os.clock() - lastShot < fireDelay then return end
+	local char = LocalPlayer.Character
+	if not char then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		hrp.Velocity = Vector3.new(0, 0, 0)
+		hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+	end
+	local tool = char:FindFirstChildOfClass("Tool")
+	if not tool then return end
+	local targets = getTargets()
+	if #targets == 0 then
+		currentTarget = nil
+		updateStatus("no targets found...")
+		return
+	end
+	local tgt = targets[1]
+	if currentTarget ~= tgt.hum then
+		currentTarget = tgt.hum
+		shotsOnTarget[tgt.hum] = 0
+	end
+	if shotsOnTarget[tgt.hum] >= 5 then
+		shotsOnTarget[tgt.hum] = 0
+		currentTarget = nil
+		task.wait(0.2)
+		return
+	end
+	pcall(function()
+		setShootingStatus("target")
+		local pos = tgt.part.Position + Vector3.new(
+			math.random(-5, 5) / 10,
+			math.random(-5, 5) / 10,
+			math.random(-5, 5) / 10
+		)
+		local dir = (pos - Camera.CFrame.Position).Unit
+		local cf = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + dir)
+		local args = {
+			os.clock(),
+			tool,
+			cf,
+			true,
+			{["1"] = {tgt.hum, false, true, 100}}
+		}
+		ShootEvent:FireServer(unpack(args))
+		shotsOnTarget[tgt.hum] = shotsOnTarget[tgt.hum] + 1
+		lastShot = os.clock()
+	end)
+end) --omfg i copy it wrong :sob: dont might all this updates im so stupid af

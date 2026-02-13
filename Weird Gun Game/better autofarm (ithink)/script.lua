@@ -4,15 +4,16 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
 
-local BLACKLIST = {"krzys123six", "donadosPL"}
+local BLACKLIST = {"izgak3140DIt"} -- oop
 
 getgenv().lt = {
-	["damage"] = 67 -- this is only visual btw
+	["damage"] = 67
 }
 
 if not(getgenv().work) then
@@ -56,6 +57,12 @@ noclip()
 
 local scriptEnabled = true
 local statusText = "Initializing..."
+local lastImportantStatus = 0
+local importantStatusDuration = 3
+
+local COLOR1 = Color3.fromHex("447294")
+local COLOR2 = Color3.fromHex("8fbcdb")
+local COLOR3 = Color3.fromHex("f4d6bc")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "FarmStatusGUI"
@@ -65,22 +72,35 @@ gui.Parent = game:GetService("CoreGui")
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 400, 0, 150)
 frame.Position = UDim2.new(0.5, -200, 0.02, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 frame.BorderSizePixel = 0
 frame.Parent = gui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = frame
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
+
+local bgText = Instance.new("TextLabel")
+bgText.Size = UDim2.new(1, 0, 1, 0)
+bgText.Position = UDim2.new(0, 0, 0, 0)
+bgText.BackgroundTransparency = 1
+bgText.Text = "Potetium+"
+bgText.TextColor3 = Color3.fromRGB(255, 255, 255)
+bgText.TextTransparency = 0.75
+bgText.Font = Enum.Font.GothamBold
+bgText.TextSize = 52
+bgText.ZIndex = 1
+bgText.Parent = frame
 
 local workingLabel = Instance.new("TextLabel")
 workingLabel.Size = UDim2.new(1, 0, 0.5, 0)
 workingLabel.Position = UDim2.new(0, 0, 0, 0)
 workingLabel.BackgroundTransparency = 1
 workingLabel.Text = "WORKING"
-workingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+workingLabel.TextColor3 = COLOR1
 workingLabel.Font = Enum.Font.GothamBold
 workingLabel.TextSize = 45
+workingLabel.ZIndex = 2
 workingLabel.Parent = frame
 
 local orNotLabel = Instance.new("TextLabel")
@@ -88,20 +108,22 @@ orNotLabel.Size = UDim2.new(1, 0, 0.15, 0)
 orNotLabel.Position = UDim2.new(0, 0, 0.45, 0)
 orNotLabel.BackgroundTransparency = 1
 orNotLabel.Text = "or not working"
-orNotLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+orNotLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
 orNotLabel.Font = Enum.Font.GothamBold
 orNotLabel.TextSize = 18
+orNotLabel.ZIndex = 2
 orNotLabel.Parent = frame
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -20, 0.25, 0)
-statusLabel.Position = UDim2.new(0, 10, 0.7, 0)
-statusLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+statusLabel.Position = UDim2.new(0, 10, 0.72, 0)
+statusLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 statusLabel.Text = "status: Initializing..."
-statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 14
+statusLabel.TextSize = 13
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.ZIndex = 2
 statusLabel.Parent = frame
 
 local statusCorner = Instance.new("UICorner")
@@ -109,29 +131,102 @@ statusCorner.CornerRadius = UDim.new(0, 6)
 statusCorner.Parent = statusLabel
 
 local clickDetector = Instance.new("TextButton")
-clickDetector.Size = UDim2.new(1, 0, 0.5, 0)
+clickDetector.Size = UDim2.new(1, 0, 0.6, 0)
 clickDetector.Position = UDim2.new(0, 0, 0, 0)
 clickDetector.BackgroundTransparency = 1
 clickDetector.Text = ""
+clickDetector.ZIndex = 3
 clickDetector.Parent = frame
 
 clickDetector.MouseButton1Click:Connect(function()
 	scriptEnabled = not scriptEnabled
 	if scriptEnabled then
-		workingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
 		workingLabel.Text = "WORKING"
-		statusText = "Script enabled"
+		orNotLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
 	else
-		workingLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 		workingLabel.Text = "NOT WORKING"
-		statusText = "Script disabled"
+		orNotLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
 	end
-	statusLabel.Text = "status: " .. statusText
 end)
 
-local function updateStatus(text)
-	statusText = text
-	statusLabel.Text = "status: " .. statusText
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+frame.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+task.spawn(function()
+	local colors = {COLOR1, COLOR2, COLOR3, COLOR2, COLOR1}
+	local idx = 1
+	while true do
+		local nextIdx = (idx % #colors) + 1
+		local tween = TweenService:Create(workingLabel, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextColor3 = colors[nextIdx]})
+		tween:Play()
+		tween.Completed:Wait()
+		idx = nextIdx
+	end
+end)
+
+local dotCount = 0
+local shootingTarget = ""
+local isShootingState = false
+
+task.spawn(function()
+	while true do
+		task.wait(0.4)
+		if isShootingState and scriptEnabled then
+			dotCount = (dotCount % 3) + 1
+			local dots = string.rep(".", dotCount)
+			local spaces = string.rep(" ", 3 - dotCount)
+			statusLabel.Text = "shooting " .. shootingTarget .. " " .. dots .. spaces
+		end
+	end
+end)
+
+local importantStatusActive = false
+
+local function updateStatus(text, important)
+	if importantStatusActive then return end
+	
+	if important then
+		importantStatusActive = true
+		isShootingState = false
+		statusLabel.Text = "status: " .. text
+		statusLabel.TextColor3 = Color3.fromHex("f4d6bc")
+		task.spawn(function()
+			task.wait(importantStatusDuration)
+			statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+			importantStatusActive = false
+		end)
+	else
+		isShootingState = false
+		statusLabel.Text = "status: " .. text
+	end
+end
+
+local function setShootingStatus(targetName)
+	if importantStatusActive then return end
+	isShootingState = true
+	shootingTarget = targetName
 end
 
 local function equipTool()
@@ -186,8 +281,8 @@ end)
 
 task.spawn(function()
 	task.wait(180)
-	updateStatus("Auto server hop (3min)")
-	task.wait(2)
+	updateStatus("auto server hopping...", true)
+	task.wait(3)
 	TeleportService:Teleport(game.PlaceId, LocalPlayer)
 end)
 
@@ -234,9 +329,7 @@ end
 
 local function detectMapAndGetSpot()
 	local mapFolder = Workspace:FindFirstChild("Map")
-	if not mapFolder then
-		return nil
-	end
+	if not mapFolder then return nil end
 	
 	local trussesFolder = mapFolder:FindFirstChild("Trusses")
 	
@@ -259,7 +352,6 @@ local function detectMapAndGetSpot()
 				end
 			end
 		end
-		
 		if hasNeonRed then
 			return {pos = Vector3.new(-2279, 678, -1174), noclip = true}
 		else
@@ -284,33 +376,29 @@ end
 
 task.spawn(function()
 	while task.wait(2) do
-		if scriptEnabled then
-			equipTool()
-		end
+		if scriptEnabled then equipTool() end
 	end
 end)
 
 task.spawn(function()
 	while task.wait(5) do
 		if not scriptEnabled then continue end
-		
 		pcall(function()
 			local mapData = detectMapAndGetSpot()
 			
 			if not mapData then
-				updateStatus("Bad map detected - server hopping...")
-				task.wait(2)
+				updateStatus("bad map - server hopping...", true)
+				task.wait(3)
 				TeleportService:Teleport(game.PlaceId, LocalPlayer)
 				return
 			end
 			
 			local char = LocalPlayer.Character
 			if not char then return end
-			
 			local hrp = char:FindFirstChild("HumanoidRootPart")
 			if not hrp then return end
 			
-			updateStatus("Teleporting to hiding spot...")
+			updateStatus("map detected - teleporting...", true)
 			hrp.CFrame = CFrame.new(mapData.pos)
 			hrp.Velocity = Vector3.new(0, 0, 0)
 			hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -343,7 +431,7 @@ RunService.RenderStepped:Connect(function()
 	local targets = getTargets()
 	if #targets == 0 then
 		currentTarget = nil
-		updateStatus("No targets found...")
+		updateStatus("no targets found...")
 		return
 	end
 	
@@ -362,12 +450,8 @@ RunService.RenderStepped:Connect(function()
 	end
 	
 	pcall(function()
-		local targetName = "Target"
-		if tgt.player then
-			targetName = tgt.player.Name
-		end
-		
-		updateStatus("Shooting " .. targetName .. " (" .. shotsOnTarget[tgt.hum] .. "/5)")
+		local targetName = tgt.player and tgt.player.Name or "target"
+		setShootingStatus(targetName)
 		
 		local pos = tgt.part.Position + Vector3.new(
 			math.random(-5, 5) / 10,

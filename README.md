@@ -1,32 +1,67 @@
-this is list what script do if i ain forget about it (im dyslexic btw sorry)
+## Script Collection
 
-etoh : ethernal tower of hell (PATCHED)
-it have 2 version one is autofarm for like all towers 
-and the sec one is sami autofarm for one tower (not soulcrushing+)
+This repository contains a collection of scripts I’ve worked on. Some are more polished than others, but all are functional.
 
-Obby Race 2 
-just auto teleport to winpad 
+---
 
-SuperBombSurvival (my biggest project jet)
-Autofarm that timed to 0,1s for the best dodging skills
-(im fr) with shit ton of stuff like tp to coins tp to events etc
+### Eternal Tower of Hell (PATCHED/DELETED 12.04.2026)
+- Two versions available:
+  - Full Autofarm – supports most towers
+  - Semi Autofarm – designed for a single tower (not compatible with Soul Crushing+)
 
-miners haven (it work but idk its just bit off)
-miners haven script i made have auto orb upgrader that make orbs better and 
-cost more (if u place upgraders) and other shit for auto farm like auto plot or some shit idfk
+---
 
-Weird Gun Game
-just wall bang targets for cash tbh but it work extremly well and undetected bc no one gonna look at fucking 
-target and wonder why it hp is 0 :sob: 
+### Obby Race 2
+- Automatically teleports the player to the win pad
+- Simple and consistent
 
-YouVsHomer (it might be patch very soon but not now 1/24/2026)
-auto buy skin by brude force atacking id of skin so u can buy skins that was back back then (i bet u can do it easyer)
-and auto farm that teleport u to winpad WOWOWO
+---
 
-NEW SCRIPT (1/28/2026) MY BDAY
-[CULTIST!] Terraria Boss Battles: REMASTERED
-just buy all gears for inf coins so u get all gear
+### Super Bomb Survival (project since 2024 needs rewrite asap)
+- Autofarm system with very fast reaction timing (~0.1s) for effective dodging
+- Designed to reliably survive rounds
 
+Features:
+- Teleport to coins
+- Teleport to events
+- Additional utility functions
 
-other info:
-yes u can copy or steal some part i might be even happy if someone will say he stoll that code from fucking vibe coder
+---
+
+### Miners Haven (DELETED 12.04.2026)
+- Auto Orb Upgrader:
+  - Automatically upgrades orbs
+  - Increases their value when upgraders are placed
+
+- Additional automation:
+  - Auto plot setup
+  - General autofarm utilities
+
+---
+
+### Weird Gun Game
+- Automates targeting through walls to farm cash efficiently
+- Consistent and effective performance
+
+---
+
+### YouVsHomer (PATCHED/DELETED 12.04.2026)
+- Skin unlock system using ID-based purchasing
+  - Allows access to previously available skins
+
+- Autofarm:
+  - Automatically teleports to win pad
+
+---
+
+### Cultist – Terraria Boss Battles: Remastered (DELETED 12.04.2026)
+
+- Generates effectively unlimited coins through gear purchasing
+- Enables instant access to all available gear
+  
+
+---
+
+## Additional Notes
+- Parts of the code are free to reuse or modify
+- Attribution is appreciated, but not required

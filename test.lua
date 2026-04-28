@@ -16,7 +16,7 @@ if game.PlaceId == 4646477729 then
         task.wait()
         Remote:FireServer("Start")
     end)
-    return -- stops here, doesn't run autofarm in lobby
+    return
 end
 
 -- =============================================
@@ -63,14 +63,14 @@ platform.Transparency = 1
 platform.CFrame = CFrame.new(9, 247, -10)
 platform.Parent = workspace
 
--- keep character on platform
+-- character lock loop (0.1 instead of every frame)
 task.spawn(function()
     while true do
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(9, 248, -10)
         end
-        task.wait()
+        task.wait(0.1)
     end
 end)
 
@@ -114,6 +114,12 @@ local function getLeaveButton()
         and LocalPlayer.PlayerGui.Menu.ResultScreen:FindFirstChild("Leave")
 end
 
+local function getRetryButton()
+    return LocalPlayer.PlayerGui:FindFirstChild("Menu")
+        and LocalPlayer.PlayerGui.Menu:FindFirstChild("ResultScreen")
+        and LocalPlayer.PlayerGui.Menu.ResultScreen:FindFirstChild("Retry")
+end
+
 -- wait until button is visible
 local function waitForButton(getBtn, timeout)
     timeout = timeout or 60
@@ -143,10 +149,17 @@ task.spawn(function()
             task.wait(0.2)
             smartClick(leave)
         end
+
+        -- retry button if it shows up instead of leave
+        local retry = waitForButton(getRetryButton, 10)
+        if retry then
+            task.wait(0.2)
+            smartClick(retry)
+        end
     end
 end)
 
--- troop placement loop
+-- troop placement loop (slowed down)
 task.spawn(function()
     while true do
         for _, move in ipairs(places) do
@@ -156,9 +169,9 @@ task.spawn(function()
                     TroopPlace:FireServer(troopObj, Vector3.new(move.x, move.y, move.z), move.rot)
                 end)
             end
-            task.wait(0.3)
+            task.wait(0.5)
         end
-        task.wait(1)
+        task.wait(2)
     end
 end)
 

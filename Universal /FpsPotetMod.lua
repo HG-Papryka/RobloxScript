@@ -7,7 +7,7 @@ _G.PotetMod = 1/2/3
 _G.fpscap = 5/67/2/60/1e6 
 yk you can set any fps cap or leave it for fps unlocking
 
-
+by potet
 
 ]]
 
@@ -31,15 +31,6 @@ local LVL        = _G.PotetMod
 local IS_BSS     = game.PlaceId == 1537690962
 local FLAT_COLOR = Color3.fromRGB(163, 162, 165)
 local PARTICLES  = {"ParticleEmitter","Trail","Smoke","Fire","Sparkles"}
-
-local function IsOtherChar(inst)
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= ME and p.Character and inst:IsDescendantOf(p.Character) then
-            return true
-        end
-    end
-    return false
-end
 
 local function IsProtectedDecal(inst)
     if not IS_BSS then return false end
@@ -86,9 +77,7 @@ pcall(function()
 end)
 
 local function OptimizeMode1(inst)
-    if IsOtherChar(inst) then return end
     if IsProtectedDecal(inst) then return end
-    if inst:IsDescendantOf(Players) and not inst:IsDescendantOf(ME.Backpack) then return end
 
     if inst:IsA("SpecialMesh") then
         inst:Destroy()
@@ -117,6 +106,9 @@ local function OptimizeMode1(inst)
     elseif inst:IsA("Sound") then
         inst.Volume = 0
         inst:Stop()
+
+    elseif inst:IsA("Decal") or inst:IsA("Texture") then
+        inst:Destroy()
 
     elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
         inst.Enabled = false
@@ -175,7 +167,7 @@ local function OptimizeMode2Extra(inst)
         pcall(function() inst.TextureID = "" end)
 
     elseif inst:IsA("Decal") or inst:IsA("Texture") then
-        inst.Transparency = 1
+        inst:Destroy()
 
     elseif inst:IsA("Clothing") or inst:IsA("SurfaceAppearance") or inst:IsA("BaseWrap") then
         inst:Destroy()
@@ -304,7 +296,7 @@ local function RescanDecals()
             task.wait(5)
             for _, v in pairs(game:GetDescendants()) do
                 if (v:IsA("Decal") or v:IsA("Texture")) and not IsProtectedDecal(v) then
-                    pcall(function() v.Transparency = 1 end)
+                    pcall(function() v:Destroy() end)
                 end
             end
         end
@@ -316,6 +308,8 @@ if LVL == 1 then
     task.spawn(function()
         for _, v in pairs(game:GetDescendants()) do pcall(OptimizeMode1, v) end
     end)
+    pcall(StripPlayer, ME.Character)
+    ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
     game.DescendantAdded:Connect(function(v)
         pcall(OptimizeMode1, v)
     end)
@@ -344,6 +338,9 @@ elseif LVL == 2 then
             end)
         end
     end
+
+    pcall(StripPlayer, ME.Character)
+    ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
 
     workspace.CurrentCamera.FieldOfView = 30
 
@@ -381,6 +378,9 @@ elseif LVL == 3 then
             pcall(function() v.Transparency = 1 end)
         end
     end)
+
+    pcall(StripPlayer, ME.Character)
+    ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
 
     pcall(function()
         local t = workspace:FindFirstChildOfClass("Terrain")

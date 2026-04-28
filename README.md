@@ -17,7 +17,7 @@ This repository contains a collection of scripts I’ve worked on. Some are more
 
 ---
 
-### Super Bomb Survival (project since 2024 needs rewrite asap)
+### Super Bomb Survival (project since 2024 needs rewrite asap) note: i ain gonna do that so fast cuz making it better means it will be bannable :Sob: IM DEAD SERIUS
 - Autofarm system with very fast reaction timing (~0.1s) for effective dodging
 - Designed to reliably survive rounds
 
@@ -28,7 +28,7 @@ Features:
 
 ---
 
-### Miners Haven (DELETED 12.04.2026)
+### Miners Haven (DELETED 12.04.2026) note: i got banned and i saw that other script works the same but better so like yuh
 - Auto Orb Upgrader:
   - Automatically upgrades orbs
   - Increases their value when upgraders are placed
@@ -39,7 +39,7 @@ Features:
 
 ---
 
-### Weird Gun Game
+### Weird Gun Game note: idk when i last test it but id say its fine tho please run it on alt for like a 5 hours before it
 - Automates targeting through walls to farm cash efficiently
 - Consistent and effective performance
 
@@ -54,7 +54,7 @@ Features:
 
 ---
 
-### Cultist – Terraria Boss Battles: Remastered (DELETED 12.04.2026)
+### Cultist – Terraria Boss Battles: Remastered (DELETED 12.04.2026) note: it works tho idk
 
 - Generates effectively unlimited coins through gear purchasing
 - Enables instant access to all available gear

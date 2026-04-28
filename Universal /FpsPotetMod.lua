@@ -303,6 +303,27 @@ local function RescanDecals()
     end)
 end
 
+
+local function OnPlayerAdded(p)
+    if p == ME then return end
+    pcall(StripPlayer, p.Character)
+    pcall(FreezeAnims, p.Character)
+    p.CharacterAdded:Connect(function(c)
+        task.wait(0.5)
+        pcall(StripPlayer, c)
+        pcall(FreezeAnims, c)
+    end)
+end
+
+Players.PlayerAdded:Connect(function(p)
+    OnPlayerAdded(p)
+    if LVL == 3 then
+        p.CharacterAdded:Connect(function(c)
+            task.wait(0.5)
+            pcall(HideChar, c)
+        end)
+    end
+end)
 if LVL == 1 then
 
     task.spawn(function()

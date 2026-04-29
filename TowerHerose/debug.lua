@@ -14,7 +14,8 @@ local WATCHED = {
     ["Spectre"]=true,["Balloon Pal"]=true,["Discount Dog"]=true,
 }
 
-local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local gui = Instance.new("ScreenGui")
+gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)

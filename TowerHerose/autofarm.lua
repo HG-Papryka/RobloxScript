@@ -3,6 +3,7 @@
     tower heroes autofarm
     needs: Spectre / Lemonade Cat / Scientist
     run in lobby first, teleports to game automatically
+    ~180 coins per hour with autoskip
 ]]
 
 if game.PlaceId == 4646477729 then

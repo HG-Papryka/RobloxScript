@@ -1,6 +1,7 @@
 local RS = game:GetService("ReplicatedStorage")
 local TroopPlace = RS:WaitForChild("Events"):WaitForChild("TroopPlace")
-local recorded = {}
+local TroopEvent = RS:WaitForChild("Events"):WaitForChild("TroopEvent")
+local TroopFolder = workspace:WaitForChild("Troop")
 
 local WATCHED = {
     ["Chef"]=true,["Hotdog Frank"]=true,["Volt"]=true,["Yasuke"]=true,
@@ -14,9 +15,12 @@ local WATCHED = {
     ["Spectre"]=true,["Balloon Pal"]=true,["Discount Dog"]=true,
 }
 
+local recorded = {}
+local placedInstances = {}
+
 local gui = Instance.new("ScreenGui")
-gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
+gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0.25, 0, 0.3, 0)
@@ -59,17 +63,44 @@ local function rebuild()
     out.Text = table.concat(lines, "\n")
 end
 
+local function watchForSpawn(name)
+    task.spawn(function()
+        local deadline = tick() + 5
+        local existing = {}
+        for _, v in ipairs(TroopFolder:GetChildren()) do
+            if v.Name == name then existing[v] = true end
+        end
+        while tick() < deadline do
+            task.wait(0.1)
+            for _, v in ipairs(TroopFolder:GetChildren()) do
+                if v.Name == name and not existing[v] then
+                    if not placedInstances[name] then placedInstances[name] = {} end
+                    table.insert(placedInstances[name], v)
+                    return
+                end
+            end
+        end
+    end)
+end
+
 local mt = getrawmetatable(game)
 local old = mt.__namecall
 setreadonly(mt, false)
 mt.__namecall = newcclosure(function(self, ...)
-    if getnamecallmethod() == "FireServer" and self == TroopPlace then
-        local a = {...}
-        if a[1] and WATCHED[a[1].Name] then
-            table.insert(recorded, {name=a[1].Name, pos=a[2], rot=a[3] or 0})
+    local method = getnamecallmethod()
+    local args = {...}
+
+    if method == "FireServer" and self.Name == "TroopPlace" then
+        local troopObj = args[1]
+        local pos = args[2]
+        local rot = args[3] or 0
+        if troopObj and WATCHED[troopObj.Name] then
+            table.insert(recorded, {name=troopObj.Name, pos=pos, rot=rot})
+            watchForSpawn(troopObj.Name)
             rebuild()
         end
     end
+
     return old(self, ...)
 end)
 setreadonly(mt, true)

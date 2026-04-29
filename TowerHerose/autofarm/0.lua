@@ -3,7 +3,7 @@
     tower heroes autofarm
     needs: Chef / Wizard
     run in lobby first, teleports to game automatically
-    ~120 coins per hour
+    ~105 coins per hour
 ]]
 
 if game.PlaceId == 4646477729 then

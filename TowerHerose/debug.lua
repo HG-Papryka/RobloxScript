@@ -1,6 +1,5 @@
 local RS = game:GetService("ReplicatedStorage")
 local TroopPlace = RS:WaitForChild("Events"):WaitForChild("TroopPlace")
-local TroopEvent = RS:WaitForChild("Events"):WaitForChild("TroopEvent")
 local TroopFolder = workspace:WaitForChild("Troop")
 
 local WATCHED = {
@@ -89,7 +88,6 @@ setreadonly(mt, false)
 mt.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
-
     if method == "FireServer" and self.Name == "TroopPlace" then
         local troopObj = args[1]
         local pos = args[2]
@@ -100,7 +98,6 @@ mt.__namecall = newcclosure(function(self, ...)
             rebuild()
         end
     end
-
     return old(self, ...)
 end)
 setreadonly(mt, true)

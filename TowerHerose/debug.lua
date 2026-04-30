@@ -109,7 +109,8 @@ mt.__namecall = newcclosure(function(self, ...)
             rebuild()
         end
     end
-    return old(self, ...)
+    local ok, result = pcall(old, self, ...)
+    return result
 end)
 setreadonly(mt, true)
 

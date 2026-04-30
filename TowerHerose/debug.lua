@@ -53,23 +53,12 @@ btn.Text = "Copy"
 btn.TextScaled = true
 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-local function getMapName()
-    local maps = game:GetService("ReplicatedStorage"):FindFirstChild("Maps")
-    if maps then
-        for _, v in ipairs(maps:GetChildren()) do
-            return v.Name
-        end
-    end
-    return "UnknownMap"
-end
-
 local function rebuild()
-    local mapName = getMapName()
-    local lines = {'["' .. mapName .. '"] = {'}
+    local lines = {"local moves = {"}
     for _, m in ipairs(recorded) do
         table.insert(lines, string.format('    { "%s", %.4f, %.4f, %.4f, %d },', m.name, m.pos.X, m.pos.Y, m.pos.Z, m.rot))
     end
-    table.insert(lines, "},")
+    table.insert(lines, "}")
     out.Text = table.concat(lines, "\n")
 end
 
@@ -93,10 +82,7 @@ local function watchForSpawn(name)
     end)
 end
 
-local mt = getrawmetatable(game)
-local old = mt.__namecall
-setreadonly(mt, false)
-mt.__namecall = newcclosure(function(self, ...)
+hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
     if method == "FireServer" and self.Name == "TroopPlace" then
@@ -109,10 +95,8 @@ mt.__namecall = newcclosure(function(self, ...)
             rebuild()
         end
     end
-    local ok, result = pcall(old, self, ...)
-    return result
+    return hookmetamethod(game, "__namecall", nil)
 end)
-setreadonly(mt, true)
 
 btn.MouseButton1Click:Connect(function()
     setclipboard(out.Text)

@@ -82,7 +82,8 @@ local function watchForSpawn(name)
     end)
 end
 
-hookmetamethod(game, "__namecall", function(self, ...)
+local old
+old = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
     if method == "FireServer" and self.Name == "TroopPlace" then
@@ -95,9 +96,8 @@ hookmetamethod(game, "__namecall", function(self, ...)
             rebuild()
         end
     end
-    return hookmetamethod(game, "__namecall", nil)
+    return old(self, ...)
 end)
-
 btn.MouseButton1Click:Connect(function()
     setclipboard(out.Text)
     btn.Text = "Copied!"

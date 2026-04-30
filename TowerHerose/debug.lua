@@ -17,6 +17,16 @@ local WATCHED = {
 local recorded = {}
 local placedInstances = {}
 
+local mapName = (function()
+    local maps = RS:FindFirstChild("Maps")
+    if maps then
+        for _, v in ipairs(maps:GetChildren()) do
+            return v.Name
+        end
+    end
+    return "UnknownMap"
+end)()
+
 local gui = Instance.new("ScreenGui")
 gui.ResetOnSpawn = false
 gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
@@ -41,7 +51,7 @@ out.TextWrapped = true
 out.TextXAlignment = Enum.TextXAlignment.Left
 out.TextYAlignment = Enum.TextYAlignment.Top
 out.ClearTextOnFocus = false
-out.Text = "place towers..."
+out.Text = '["' .. mapName .. '"] = {'
 Instance.new("UICorner", out).CornerRadius = UDim.new(0, 6)
 
 local btn = Instance.new("TextButton", frame)
@@ -53,18 +63,7 @@ btn.Text = "Copy"
 btn.TextScaled = true
 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-local function getMapName()
-    local maps = RS:FindFirstChild("Maps")
-    if maps then
-        for _, v in ipairs(maps:GetChildren()) do
-            return v.Name
-        end
-    end
-    return "UnknownMap"
-end
-
 local function rebuild()
-    local mapName = getMapName()
     local lines = {'["' .. mapName .. '"] = {'}
     for _, m in ipairs(recorded) do
         table.insert(lines, string.format('    { "%s", %.4f, %.4f, %.4f, %d },', m.name, m.pos.X, m.pos.Y, m.pos.Z, m.rot))

@@ -284,7 +284,7 @@ task.spawn(function()
         for _, troop in ipairs(TroopFolder:GetChildren()) do
             if troop.Name == "Spectre" then
                 pcall(function() TroopEvent:FireServer("Upgrade", troop) end)
-                task.wait(15)
+                task.wait(10)
             end
         end
         task.wait(15)
@@ -296,7 +296,7 @@ task.spawn(function()
         for _, troop in ipairs(TroopFolder:GetChildren()) do
             if troop.Name == "Balloon Pal" then
                 pcall(function() TroopEvent:FireServer("Upgrade", troop) end)
-                task.wait(15)
+                task.wait(11)
             end
         end
         task.wait(15)

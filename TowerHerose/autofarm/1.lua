@@ -4,6 +4,28 @@
     needs: Spectre / Lemonade Cat / Scientist / Dumpster Child / Balloon Pal
     run in lobby first, teleports to game automatically
     ~200 coins a hour 
+
+
+
+
+
+
+
+other versions
+
+
+needs: Chef / Wizard
+https://github.com/HG-Papryka/RobloxScript/blob/main/TowerHerose/autofarm/0.lua
+
+needs: Spectre / Lemonade Cat / Scientist 
+https://github.com/HG-Papryka/RobloxScript/blob/main/TowerHerose/autofarm/0.5.lua
+
+
+
+
+
+
+
 ]]
 
 if game.PlaceId==4646477729 then

@@ -1,9 +1,9 @@
---[[ 
+--[[
     by potet
     tower heroes autofarm
-    needs: Spectre / Lemonade Cat / Scientist
+    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child (optional)
     run in lobby first, teleports to game automatically
-    ~180 coins per hour with autoskip
+    ~200 coins a hour 
 ]]
 
 if game.PlaceId == 4646477729 then
@@ -32,6 +32,9 @@ local LocalPlayer = Players.LocalPlayer
 local TroopPlace = RS:WaitForChild("Events"):WaitForChild("TroopPlace")
 local TroopEvent = RS:WaitForChild("Events"):WaitForChild("TroopEvent")
 local TroopFolder = workspace:WaitForChild("Troop")
+local UpdateTargeting = RS:WaitForChild("Events"):WaitForChild("UpdateTargeting")
+
+LocalPlayer:GetMouse().Icon = "rbxasset://textures/Blank.png"
 
 local function getTroopObject(name)
     local troops = RS:FindFirstChild("Troops")
@@ -39,38 +42,120 @@ local function getTroopObject(name)
 end
 
 local places = {
-    { name="Lemonade Cat", x=-18.5899, y=63.3495, z=-6.1482, rot=0 },
-    { name="Lemonade Cat", x=-18.7611, y=63.3495, z=-3.9044, rot=0 },
-    { name="Lemonade Cat", x=-15.6175, y=63.3495, z=-6.4101, rot=0 },
-    { name="Lemonade Cat", x=-15.8413, y=63.3495, z=-4.1890, rot=0 },
-    { name="Spectre",      x=10.3954, y=63.3995, z=5.1573,  rot=0 },
-    { name="Scientist",    x=13.5157, y=63.3995, z=5.1524,  rot=0 },
-    { name="Scientist",    x=13.2889, y=63.3995, z=2.1035,  rot=0 },
-    { name="Scientist",    x=9.8361,  y=63.3995, z=2.0316,  rot=0 },
-    { name="Scientist",    x=16.3228, y=63.3995, z=2.6596,  rot=0 },
-    { name="Scientist",    x=7.3166,  y=63.3995, z=5.5371,  rot=0 },
+    { name="Dumpster Child", x=6.6203,  y=63.3995, z=47.1912,  rot=0 },
+    { name="Lemonade Cat",   x=6.6159,  y=66.3995, z=-22.1279, rot=6 },
+    { name="Lemonade Cat",   x=9.9251,  y=66.3995, z=-21.7934, rot=2 },
+    { name="Lemonade Cat",   x=10.1411, y=66.3995, z=-19.0374, rot=2 },
+    { name="Lemonade Cat",   x=6.8276,  y=66.3995, z=-18.9761, rot=6 },
+    { name="Scientist",      x=7.5312,  y=63.3995, z=26.4266,  rot=0 },
+    { name="Scientist",      x=7.8830,  y=63.3995, z=23.3134,  rot=0 },
+    { name="Scientist",      x=7.7383,  y=63.3995, z=20.2354,  rot=0 },
+    { name="Scientist",      x=4.1846,  y=63.3995, z=21.6608,  rot=0 },
+    { name="Scientist",      x=5.0221,  y=63.3995, z=28.7556,  rot=0 },
+    { name="Spectre",        x=5.1129,  y=63.3995, z=24.6034,  rot=0 },
 }
 
-for _, v in ipairs(workspace:GetChildren()) do
-    if v.Name == "AutoFarmPlatform" then v:Destroy() end
-end
+local TOWER_DATA = {
+    { name="Spectre",        max=1,  texture="rbxassetid://8273607953" },
+    { name="Scientist",      max=5,  texture="rbxassetid://7118338906" },
+    { name="Dumpster Child", max=1,  texture="rbxassetid://16597907208", optional=true },
+    { name="Lemonade Cat",   max=4,  texture="rbxassetid://8273477941" },
+}
 
-local platform = Instance.new("Part")
-platform.Name = "AutoFarmPlatform"
-platform.Size = Vector3.new(10, 1, 10)
-platform.Anchored = true
-platform.CanCollide = true
-platform.Transparency = 1
-platform.CFrame = CFrame.new(9, 247, -10)
-platform.Parent = workspace
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.DisplayOrder = -1
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local panel = Instance.new("Frame")
+panel.Size = UDim2.new(0, 130, 0, 0)
+panel.Position = UDim2.new(0, 8, 0.5, 0)
+panel.AnchorPoint = Vector2.new(0, 0.5)
+panel.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
+panel.BorderSizePixel = 0
+panel.AutomaticSize = Enum.AutomaticSize.Y
+panel.Parent = gui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 10)
+local panelPad = Instance.new("UIPadding", panel)
+panelPad.PaddingTop = UDim.new(0, 8)
+panelPad.PaddingBottom = UDim.new(0, 8)
+panelPad.PaddingLeft = UDim.new(0, 6)
+panelPad.PaddingRight = UDim.new(0, 6)
+local panelList = Instance.new("UIListLayout", panel)
+panelList.Padding = UDim.new(0, 6)
+panelList.FillDirection = Enum.FillDirection.Vertical
+
+local cardRefs = {}
+
+for _, td in ipairs(TOWER_DATA) do
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 60)
+    card.BackgroundColor3 = Color3.fromRGB(24, 24, 32)
+    card.BorderSizePixel = 0
+    card.Parent = panel
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+
+    local img = Instance.new("ImageLabel")
+    img.Size = UDim2.new(0, 44, 0, 44)
+    img.Position = UDim2.new(0, 6, 0.5, 0)
+    img.AnchorPoint = Vector2.new(0, 0.5)
+    img.BackgroundTransparency = 1
+    img.Image = td.texture
+    img.Parent = card
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, -56, 0, 16)
+    nameLabel.Position = UDim2.new(0, 54, 0, 8)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+    nameLabel.TextSize = 11
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    nameLabel.Text = td.name .. (td.optional and " ?" or "")
+    nameLabel.Parent = card
+
+    local countLabel = Instance.new("TextLabel")
+    countLabel.Size = UDim2.new(1, -56, 0, 14)
+    countLabel.Position = UDim2.new(0, 54, 0, 24)
+    countLabel.BackgroundTransparency = 1
+    countLabel.TextColor3 = Color3.fromRGB(120, 220, 160)
+    countLabel.TextSize = 11
+    countLabel.Font = Enum.Font.Gotham
+    countLabel.TextXAlignment = Enum.TextXAlignment.Left
+    countLabel.Text = "0 / " .. td.max
+    countLabel.Parent = card
+
+    -- TODO: lvl detection - add 1-max level dots here once we find where level is stored
+    local lvlLabel = Instance.new("TextLabel")
+    lvlLabel.Size = UDim2.new(1, -56, 0, 12)
+    lvlLabel.Position = UDim2.new(0, 54, 0, 40)
+    lvlLabel.BackgroundTransparency = 1
+    lvlLabel.TextColor3 = Color3.fromRGB(80, 80, 100)
+    lvlLabel.TextSize = 10
+    lvlLabel.Font = Enum.Font.Gotham
+    lvlLabel.TextXAlignment = Enum.TextXAlignment.Left
+    lvlLabel.Text = "lvl: todo"
+    lvlLabel.Parent = card
+
+    cardRefs[td.name] = { card=card, countLabel=countLabel, img=img, max=td.max }
+end
 
 task.spawn(function()
     while true do
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(9, 248, -10)
+        local counts = {}
+        for _, troop in ipairs(TroopFolder:GetChildren()) do
+            counts[troop.Name] = (counts[troop.Name] or 0) + 1
         end
-        task.wait(0.1)
+        for name, ref in pairs(cardRefs) do
+            local n = counts[name] or 0
+            ref.countLabel.Text = n .. " / " .. ref.max
+            local isEmpty = n == 0
+            ref.card.BackgroundColor3 = isEmpty and Color3.fromRGB(18, 18, 22) or Color3.fromRGB(24, 24, 32)
+            ref.img.ImageTransparency = isEmpty and 0.6 or 0
+            ref.countLabel.TextColor3 = isEmpty and Color3.fromRGB(70, 70, 90) or Color3.fromRGB(120, 220, 160)
+        end
+        task.wait(0.5)
     end
 end)
 
@@ -91,11 +176,6 @@ end
 local function smartClick(btn)
     if not btn then return end
     pcall(function() btn.MouseButton1Click:Fire() end)
-    pcall(function()
-        for _, v in pairs(getconnections(btn.MouseButton1Click)) do
-            v:Fire()
-        end
-    end)
     clickGuiObject(btn)
 end
 
@@ -112,20 +192,12 @@ local function getLeaveButton()
         and LocalPlayer.PlayerGui.Menu.ResultScreen:FindFirstChild("Leave")
 end
 
-local function getRetryButton()
-    return LocalPlayer.PlayerGui:FindFirstChild("Menu")
-        and LocalPlayer.PlayerGui.Menu:FindFirstChild("ResultScreen")
-        and LocalPlayer.PlayerGui.Menu.ResultScreen:FindFirstChild("Retry")
-end
-
 local function waitForButton(getBtn, timeout)
     timeout = timeout or 60
     local t = 0
     while t < timeout do
         local btn = getBtn()
-        if btn and btn.Visible then
-            return btn
-        end
+        if btn and btn.Visible then return btn end
         task.wait(0.5)
         t = t + 0.5
     end
@@ -138,8 +210,6 @@ task.spawn(function()
         if ready then task.wait(0.2) smartClick(ready) end
         local leave = waitForButton(getLeaveButton, 300)
         if leave then task.wait(0.2) smartClick(leave) end
-        local retry = waitForButton(getRetryButton, 10)
-        if retry then task.wait(0.2) smartClick(retry) end
     end
 end)
 
@@ -195,5 +265,20 @@ task.spawn(function()
             end
         end
         task.wait(15)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        for _, troop in ipairs(TroopFolder:GetChildren()) do
+            if troop.Name == "Dumpster Child" then
+                pcall(function()
+                    UpdateTargeting:FireServer(troop, "Random")
+                    TroopEvent:FireServer("Upgrade", troop)
+                end)
+                task.wait(12)
+            end
+        end
+        task.wait(12)
     end
 end)

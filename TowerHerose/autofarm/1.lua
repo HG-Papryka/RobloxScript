@@ -1,7 +1,7 @@
 --[[
     by potet
     tower heroes autofarm
-    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child (optional)
+    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child / Balloon Pal
     run in lobby first, teleports to game automatically
     ~200 coins a hour 
 ]]
@@ -42,24 +42,26 @@ local function getTroopObject(name)
 end
 
 local places = {
-    { name="Dumpster Child", x=6.6203,  y=63.3995, z=47.1912,  rot=0 },
-    { name="Lemonade Cat",   x=6.6159,  y=66.3995, z=-22.1279, rot=6 },
-    { name="Lemonade Cat",   x=9.9251,  y=66.3995, z=-21.7934, rot=2 },
-    { name="Lemonade Cat",   x=10.1411, y=66.3995, z=-19.0374, rot=2 },
-    { name="Lemonade Cat",   x=6.8276,  y=66.3995, z=-18.9761, rot=6 },
-    { name="Scientist",      x=7.5312,  y=63.3995, z=26.4266,  rot=0 },
-    { name="Scientist",      x=7.8830,  y=63.3995, z=23.3134,  rot=0 },
-    { name="Scientist",      x=7.7383,  y=63.3995, z=20.2354,  rot=0 },
-    { name="Scientist",      x=4.1846,  y=63.3995, z=21.6608,  rot=0 },
-    { name="Scientist",      x=5.0221,  y=63.3995, z=28.7556,  rot=0 },
-    { name="Spectre",        x=5.1129,  y=63.3995, z=24.6034,  rot=0 },
+    { name="Lemonade Cat",   x=6.9262,  y=66.3995, z=-22.2864, rot=6 },
+    { name="Lemonade Cat",   x=10.7466, y=66.3995, z=-22.0326, rot=2 },
+    { name="Lemonade Cat",   x=11.1159, y=66.3995, z=-18.5232, rot=2 },
+    { name="Lemonade Cat",   x=7.1062,  y=66.3995, z=-18.9530, rot=6 },
+    { name="Dumpster Child", x=6.7865,  y=63.3995, z=38.4688,  rot=0 },
+    { name="Balloon Pal",    x=7.8769,  y=63.3995, z=26.4574,  rot=0 },
+    { name="Spectre",        x=7.9000,  y=63.3995, z=24.2849,  rot=0 },
+    { name="Scientist",      x=7.6592,  y=63.3995, z=29.5420,  rot=0 },
+    { name="Scientist",      x=4.7852,  y=63.3995, z=26.1879,  rot=0 },
+    { name="Scientist",      x=4.2734,  y=63.3995, z=29.2454,  rot=0 },
+    { name="Scientist",      x=5.1716,  y=63.3995, z=22.8176,  rot=0 },
+    { name="Scientist",      x=7.7010,  y=63.3995, z=20.9999,  rot=0 },
 }
 
 local TOWER_DATA = {
-    { name="Spectre",        max=1,  texture="rbxassetid://8273607953" },
-    { name="Scientist",      max=5,  texture="rbxassetid://7118338906" },
-    { name="Dumpster Child", max=1,  texture="rbxassetid://16597907208", optional=true },
-    { name="Lemonade Cat",   max=4,  texture="rbxassetid://8273477941" },
+    { name="Spectre",        max=1, texture="rbxassetid://8273607953" },
+    { name="Balloon Pal",    max=1, texture="rbxassetid://8275379669" },
+    { name="Scientist",      max=5, texture="rbxassetid://7118338906" },
+    { name="Dumpster Child", max=1, texture="rbxassetid://16597907208", optional=true },
+    { name="Lemonade Cat",   max=4, texture="rbxassetid://8273477941" },
 }
 
 local gui = Instance.new("ScreenGui")
@@ -126,7 +128,6 @@ for _, td in ipairs(TOWER_DATA) do
     countLabel.Text = "0 / " .. td.max
     countLabel.Parent = card
 
-    -- TODO: lvl detection - add 1-max level dots here once we find where level is stored
     local lvlLabel = Instance.new("TextLabel")
     lvlLabel.Size = UDim2.new(1, -56, 0, 12)
     lvlLabel.Position = UDim2.new(0, 54, 0, 40)
@@ -271,14 +272,26 @@ end)
 task.spawn(function()
     while true do
         for _, troop in ipairs(TroopFolder:GetChildren()) do
+            if troop.Name == "Balloon Pal" then
+                pcall(function() TroopEvent:FireServer("Upgrade", troop) end)
+                task.wait(15)
+            end
+        end
+        task.wait(15)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        for _, troop in ipairs(TroopFolder:GetChildren()) do
             if troop.Name == "Dumpster Child" then
                 pcall(function()
                     UpdateTargeting:FireServer(troop, "Random")
                     TroopEvent:FireServer("Upgrade", troop)
                 end)
-                task.wait(12)
+                task.wait(0.5)
             end
         end
-        task.wait(12)
+        task.wait(0.5)
     end
 end)

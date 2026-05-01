@@ -6,30 +6,22 @@
     ~200 coins a hour 
 ]]
 
-if game.PlaceId == 4646477729 then
+if game.PlaceId==4646477729 then
 local RS=game:GetService("ReplicatedStorage")
-
 task.spawn(function()
-    task.wait(3)
-
-    local Remote=RS:WaitForChild("Events"):WaitForChild("PrivateServerEvent")
-
-    Remote:FireServer("Create",true)
-    task.wait(0.05)
-
-    Remote:FireServer("Mode","Challenge Mode")
-    task.wait(0.05)
-
-    Remote:FireServer("Update",{
-        Map=RS:WaitForChild("Maps"):WaitForChild("DoorsMap"),
-        Difficulty=2
-    })
-
-    task.wait(0.05)
-
-    Remote:FireServer("Start")
+task.wait(3)
+local Remote=RS:WaitForChild("Events"):WaitForChild("PrivateServerEvent")
+Remote:FireServer("Create",true)
+task.wait(0.05)
+Remote:FireServer("Mode","Challenge Mode")
+task.wait(0.05)
+Remote:FireServer("Update",{Map=RS:WaitForChild("Maps"):WaitForChild("DoorsMap")})
+task.wait(0.05)
+Remote:FireServer("Difficulty",2)
+task.wait(0.05)
+Remote:FireServer("Start")
 end)
-    return
+return
 end
 
 local RS = game:GetService("ReplicatedStorage")

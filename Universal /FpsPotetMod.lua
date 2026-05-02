@@ -7,12 +7,16 @@ _G.PotetMod = 1/2/3
 _G.fpscap = 5/67/2/60/1e6 
 yk you can set any fps cap or leave it for fps unlocking
 
+_G.Gui = true/false
+true = keep gui working, false = destroy gui (default false)
+
 by potet
 
 ]]
 
 _G.PotetMod = _G.PotetMod or 1
 _G.fpsCap   = _G.fpsCap   or 1e6
+_G.Gui      = (_G.Gui ~= nil) and _G.Gui or false
 
 if not game:IsLoaded() then
     repeat task.wait() until game:IsLoaded()
@@ -76,82 +80,67 @@ pcall(function()
     workspace.GlobalWind = Vector3.new(0, 0, 0)
 end)
 
+local function IsGui(inst)
+    return inst:IsA("ScreenGui") or inst:IsA("BillboardGui") or inst:IsA("SurfaceGui")
+end
+
 local function OptimizeMode1(inst)
+    if not inst or not inst.Parent then return end
     if IsProtectedDecal(inst) then return end
 
     if inst:IsA("SpecialMesh") then
         inst:Destroy()
-
     elseif inst:IsA("DataModelMesh") then
         inst:Destroy()
-
     elseif inst:IsA("FaceInstance") then
         inst.Transparency = 1
         inst.Shiny        = 0
-
     elseif inst:IsA("ShirtGraphic") then
         inst.Graphic = ""
-
     elseif table.find(PARTICLES, inst.ClassName) then
         pcall(function() inst.Enabled = false end)
-
     elseif inst:IsA("PostEffect") then
         inst.Enabled = false
-
     elseif inst:IsA("Explosion") then
         inst.BlastPressure = 0
         inst.BlastRadius   = 0
         inst.Visible       = false
-
     elseif inst:IsA("Sound") then
         inst.Volume = 0
         inst:Stop()
-
     elseif inst:IsA("Decal") or inst:IsA("Texture") then
         inst:Destroy()
-
     elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
         inst.Enabled = false
-
     elseif inst:IsA("Beam") then
         inst.Enabled = false
-
     elseif inst:IsA("Highlight") or inst:IsA("SelectionHighlight") then
         inst:Destroy()
-
     elseif inst:IsA("ViewportFrame") then
         inst.Visible = false
-
     elseif inst:IsA("Humanoid") then
         inst.HealthDisplayDistance = 0
         inst.NameDisplayDistance   = 0
         inst.DisplayDistanceType   = Enum.HumanoidDisplayDistanceType.None
-
     elseif inst:IsA("MeshPart") then
         inst.RenderFidelity = Enum.RenderFidelity.Automatic
         inst.Reflectance    = 0
         inst.Material       = Enum.Material.Plastic
         inst.TextureID      = ""
         pcall(function() inst.CastShadow = false end)
-
     elseif inst:IsA("BasePart") then
         inst.Material       = Enum.Material.Plastic
         inst.Reflectance    = 0
         inst.RenderFidelity = Enum.RenderFidelity.Automatic
         pcall(function() inst.CastShadow = false end)
-
     elseif inst:IsA("Model") then
         inst.LevelOfDetail = Enum.ModelLevelOfDetail.Disabled
-
     elseif inst:IsA("Sky") or inst:IsA("Atmosphere") then
         inst:Destroy()
-
     elseif inst:IsA("PointLight") or inst:IsA("SpotLight") or inst:IsA("SurfaceLight") then
         inst.Enabled = false
-
     elseif inst:IsA("SelectionBox") or inst:IsA("SelectionSphere") then
         inst:Destroy()
-
     elseif inst:IsA("BoxHandleAdornment") or inst:IsA("SphereHandleAdornment")
         or inst:IsA("ConeHandleAdornment") or inst:IsA("CylinderHandleAdornment")
         or inst:IsA("LineHandleAdornment") or inst:IsA("ImageHandleAdornment") then
@@ -160,27 +149,22 @@ local function OptimizeMode1(inst)
 end
 
 local function OptimizeMode2Extra(inst)
+    if not inst or not inst.Parent then return end
     if IsProtectedDecal(inst) then return end
 
     if inst:IsA("BasePart") or inst:IsA("MeshPart") then
         inst.Color = FLAT_COLOR
         pcall(function() inst.TextureID = "" end)
-
     elseif inst:IsA("Decal") or inst:IsA("Texture") then
         inst:Destroy()
-
     elseif inst:IsA("Clothing") or inst:IsA("SurfaceAppearance") or inst:IsA("BaseWrap") then
         inst:Destroy()
-
     elseif inst:IsA("VideoFrame") then
         inst:Destroy()
-
     elseif inst:IsA("Sound") then
         inst:Destroy()
-
     elseif inst:IsA("Animation") then
         inst:Destroy()
-
     elseif inst:IsA("AnimationController") then
         local anim = inst:FindFirstChildOfClass("Animator")
         if anim then
@@ -190,24 +174,19 @@ local function OptimizeMode2Extra(inst)
                 end
             end)
         end
-
     elseif inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
         inst.Image            = ""
         inst.BackgroundColor3 = Color3.new(0, 0, 0)
-
     elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
         inst.TextScaled = false
         inst.RichText   = false
         inst.TextSize   = 8
         inst.Font       = Enum.Font.SourceSans
-
     elseif inst:IsA("UIStroke") or inst:IsA("UIGradient") or inst:IsA("UICorner") then
         inst:Destroy()
-
     elseif inst:IsA("UIListLayout") or inst:IsA("UIGridLayout")
         or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout") then
         inst:Destroy()
-
     elseif inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
         or inst:IsA("UITextSizeConstraint") then
         inst:Destroy()
@@ -303,7 +282,6 @@ local function RescanDecals()
     end)
 end
 
-
 local function OnPlayerAdded(p)
     if p == ME then return end
     pcall(StripPlayer, p.Character)
@@ -324,6 +302,7 @@ Players.PlayerAdded:Connect(function(p)
         end)
     end
 end)
+
 if LVL == 1 then
 
     task.spawn(function()
@@ -332,6 +311,7 @@ if LVL == 1 then
     pcall(StripPlayer, ME.Character)
     ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
     game.DescendantAdded:Connect(function(v)
+        if not v or not v.Parent then return end
         pcall(OptimizeMode1, v)
     end)
     RescanDecals()
@@ -345,6 +325,7 @@ elseif LVL == 2 then
         for _, v in pairs(game:GetDescendants()) do pcall(OptimizeMode2, v) end
     end)
     game.DescendantAdded:Connect(function(v)
+        if not v or not v.Parent then return end
         pcall(OptimizeMode2, v)
     end)
 
@@ -394,9 +375,13 @@ elseif LVL == 3 then
     end)
 
     game.DescendantAdded:Connect(function(v)
+        if not v or not v.Parent then return end
         pcall(OptimizeMode2, v)
         if v:IsA("BasePart") then
             pcall(function() v.Transparency = 1 end)
+        end
+        if not _G.Gui and IsGui(v) then
+            pcall(function() v.Enabled = false end)
         end
     end)
 
@@ -422,15 +407,16 @@ elseif LVL == 3 then
         end
     end
 
-    for _, sg in pairs(ME.PlayerGui:GetChildren()) do
-        if sg:IsA("ScreenGui") then sg.Enabled = false end
+    if not _G.Gui then
+        for _, sg in pairs(ME.PlayerGui:GetChildren()) do
+            if sg:IsA("ScreenGui") then sg.Enabled = false end
+        end
+        ME.PlayerGui.ChildAdded:Connect(function(sg)
+            if sg:IsA("ScreenGui") then sg.Enabled = false end
+        end)
+        pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) end)
+        pcall(function() UserInputService.MouseIconEnabled = false end)
     end
-    ME.PlayerGui.ChildAdded:Connect(function(sg)
-        if sg:IsA("ScreenGui") then sg.Enabled = false end
-    end)
-
-    pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) end)
-    pcall(function() UserInputService.MouseIconEnabled = false end)
 
     pcall(function() workspace.SignalBehavior   = Enum.SignalBehavior.Immediate end)
     pcall(function() workspace.StreamingEnabled = false end)

@@ -8,7 +8,7 @@ _G.fpscap = 5/67/2/60/1e6
 yk you can set any fps cap or leave it for fps unlocking
 
 _G.Gui = true/false
-true = dont touch gui at all, false = hide gui + fps boost it (default false)
+true = dont touch gui at all, false = hide gui + "fps boost it" (default false)
 
 by potet
 

@@ -1,60 +1,46 @@
 --[[
     by potet
     tower heroes autofarm
-    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child / Balloon Pal
+    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child (OPTIONAL cuz hes chill)
     run in lobby first, teleports to game automatically
-    ~200 coins a hour 
-
-
-
-
-
-
-
-other versions
-
-
-needs: Chef / Wizard
-https://github.com/HG-Papryka/RobloxScript/blob/main/TowerHerose/autofarm/0.lua
-
-needs: Spectre / Lemonade Cat / Scientist 
-https://github.com/HG-Papryka/RobloxScript/blob/main/TowerHerose/autofarm/0.5.lua
-
-
-
-
-
-
-
+    ~200 coins a hour (AUTOSKIP)
 ]]
 
 if game.PlaceId==4646477729 then
-local RS=game:GetService("ReplicatedStorage")
-task.spawn(function()
-task.wait(3)
-local Remote=RS:WaitForChild("Events"):WaitForChild("PrivateServerEvent")
-Remote:FireServer("Create",true)
-task.wait(0.05)
-Remote:FireServer("Mode","Challenge Mode")
-task.wait(0.05)
-Remote:FireServer("Update",{Map=RS:WaitForChild("Maps"):WaitForChild("DoorsMap")})
-task.wait(0.05)
-Remote:FireServer("Difficulty",2)
-task.wait(0.05)
-Remote:FireServer("Start")
-end)
-return
+    local RS=game:GetService("ReplicatedStorage")
+    task.spawn(function()
+        task.wait(3)
+        local Remote=RS:WaitForChild("Events"):WaitForChild("PrivateServerEvent")
+        Remote:FireServer("Create",true)
+        task.wait(0.05)
+        Remote:FireServer("Mode","Challenge Mode")
+        task.wait(0.05)
+        Remote:FireServer("Update",{Map=RS:WaitForChild("Maps"):WaitForChild("DoorsMap")})
+        task.wait(0.05)
+        Remote:FireServer("Difficulty",2)
+        task.wait(0.05)
+        Remote:FireServer("Start")
+    end)
+    return
 end
 
 local RS = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local VIM = game:GetService("VirtualInputManager")
 local GuiService = game:GetService("GuiService")
+local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 local TroopPlace = RS:WaitForChild("Events"):WaitForChild("TroopPlace")
 local TroopEvent = RS:WaitForChild("Events"):WaitForChild("TroopEvent")
 local TroopFolder = workspace:WaitForChild("Troop")
 local UpdateTargeting = RS:WaitForChild("Events"):WaitForChild("UpdateTargeting")
+
+GuiService.ErrorMessageChanged:Connect(function(errorMessage)
+    if errorMessage and errorMessage ~= "" then
+        task.wait(10)
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end
+end)
 
 LocalPlayer:GetMouse().Icon = "rbxasset://textures/Blank.png"
 
@@ -69,7 +55,6 @@ local places = {
     { name="Lemonade Cat",   x=11.1159, y=66.3995, z=-18.5232, rot=2 },
     { name="Lemonade Cat",   x=7.1062,  y=66.3995, z=-18.9530, rot=6 },
     { name="Dumpster Child", x=6.7865,  y=63.3995, z=38.4688,  rot=0 },
-    { name="Balloon Pal",    x=7.8769,  y=63.3995, z=26.4574,  rot=0 },
     { name="Spectre",        x=7.9000,  y=63.3995, z=24.2849,  rot=0 },
     { name="Scientist",      x=7.6592,  y=63.3995, z=29.5420,  rot=0 },
     { name="Scientist",      x=4.7852,  y=63.3995, z=26.1879,  rot=0 },
@@ -80,10 +65,9 @@ local places = {
 
 local TOWER_DATA = {
     { name="Spectre",        max=1, texture="rbxassetid://8273607953" },
-    { name="Balloon Pal",    max=1, texture="rbxassetid://8275379669" },
     { name="Scientist",      max=5, texture="rbxassetid://7118338906" },
-    { name="Dumpster Child", max=1, texture="rbxassetid://16597907208", optional=true },
     { name="Lemonade Cat",   max=4, texture="rbxassetid://8273477941" },
+    { name="Dumpster Child", max=1, texture="rbxassetid://16597907208", optional=true },
 }
 
 local gui = Instance.new("ScreenGui")
@@ -108,6 +92,16 @@ panelPad.PaddingRight = UDim.new(0, 6)
 local panelList = Instance.new("UIListLayout", panel)
 panelList.Padding = UDim.new(0, 6)
 panelList.FillDirection = Enum.FillDirection.Vertical
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 18)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Potetnium"
+titleLabel.TextColor3 = Color3.fromRGB(80, 200, 255)
+titleLabel.TextSize = 13
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+titleLabel.Parent = panel
 
 local cardRefs = {}
 
@@ -136,12 +130,23 @@ for _, td in ipairs(TOWER_DATA) do
     nameLabel.Font = Enum.Font.GothamBold
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left
     nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    nameLabel.Text = td.name .. (td.optional and " ?" or "")
+    nameLabel.Text = td.name
     nameLabel.Parent = card
+
+    local optLabel = Instance.new("TextLabel")
+    optLabel.Size = UDim2.new(1, -56, 0, 11)
+    optLabel.Position = UDim2.new(0, 54, 0, 22)
+    optLabel.BackgroundTransparency = 1
+    optLabel.TextColor3 = Color3.fromRGB(255, 180, 60)
+    optLabel.TextSize = 10
+    optLabel.Font = Enum.Font.Gotham
+    optLabel.TextXAlignment = Enum.TextXAlignment.Left
+    optLabel.Text = td.optional and "optional" or ""
+    optLabel.Parent = card
 
     local countLabel = Instance.new("TextLabel")
     countLabel.Size = UDim2.new(1, -56, 0, 14)
-    countLabel.Position = UDim2.new(0, 54, 0, 24)
+    countLabel.Position = UDim2.new(0, 54, 0, td.optional and 34 or 26)
     countLabel.BackgroundTransparency = 1
     countLabel.TextColor3 = Color3.fromRGB(120, 220, 160)
     countLabel.TextSize = 11
@@ -149,17 +154,6 @@ for _, td in ipairs(TOWER_DATA) do
     countLabel.TextXAlignment = Enum.TextXAlignment.Left
     countLabel.Text = "0 / " .. td.max
     countLabel.Parent = card
-
-    local lvlLabel = Instance.new("TextLabel")
-    lvlLabel.Size = UDim2.new(1, -56, 0, 12)
-    lvlLabel.Position = UDim2.new(0, 54, 0, 40)
-    lvlLabel.BackgroundTransparency = 1
-    lvlLabel.TextColor3 = Color3.fromRGB(80, 80, 100)
-    lvlLabel.TextSize = 10
-    lvlLabel.Font = Enum.Font.Gotham
-    lvlLabel.TextXAlignment = Enum.TextXAlignment.Left
-    lvlLabel.Text = "lvl: todo"
-    lvlLabel.Parent = card
 
     cardRefs[td.name] = { card=card, countLabel=countLabel, img=img, max=td.max }
 end
@@ -285,18 +279,6 @@ task.spawn(function()
             if troop.Name == "Spectre" then
                 pcall(function() TroopEvent:FireServer("Upgrade", troop) end)
                 task.wait(10)
-            end
-        end
-        task.wait(15)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        for _, troop in ipairs(TroopFolder:GetChildren()) do
-            if troop.Name == "Balloon Pal" then
-                pcall(function() TroopEvent:FireServer("Upgrade", troop) end)
-                task.wait(11)
             end
         end
         task.wait(15)

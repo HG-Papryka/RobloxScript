@@ -61,12 +61,12 @@ local places = {
     { name="Lemonade Cat",   x=11.1159, y=66.3995, z=-18.5232, rot=2 },
     { name="Lemonade Cat",   x=7.1062,  y=66.3995, z=-18.9530, rot=6 },
     { name="Dumpster Child", x=6.7865,  y=63.3995, z=38.4688,  rot=0 },
-    { name="Spectre",        x=7.9000,  y=63.3995, z=24.2849,  rot=0 },
-    { name="Scientist",      x=7.6592,  y=63.3995, z=29.5420,  rot=0 },
-    { name="Scientist",      x=4.7852,  y=63.3995, z=26.1879,  rot=0 },
-    { name="Scientist",      x=4.2734,  y=63.3995, z=29.2454,  rot=0 },
-    { name="Scientist",      x=5.1716,  y=63.3995, z=22.8176,  rot=0 },
-    { name="Scientist",      x=7.7010,  y=63.3995, z=20.9999,  rot=0 },
+    { name="Spectre",        x=10.3954, y=63.3995, z=5.1573,  rot=0 },
+    { name="Scientist",      x=13.5157, y=63.3995, z=5.1524,  rot=0 },
+    { name="Scientist",      x=13.2889, y=63.3995, z=2.1035,  rot=0 },
+    { name="Scientist",      x=9.8361,  y=63.3995, z=2.0316,  rot=0 },
+    { name="Scientist",      x=16.3228, y=63.3995, z=2.6596,  rot=0 },
+    { name="Scientist",      x=7.3166,  y=63.3995, z=5.5371,  rot=0 },
 }
 
 local TOWER_DATA = {

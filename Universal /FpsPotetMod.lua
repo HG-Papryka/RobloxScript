@@ -8,7 +8,7 @@ _G.fpscap = 5/67/2/60/1e6
 yk you can set any fps cap or leave it for fps unlocking
 
 _G.Gui = true/false
-true = dont touch gui at all, false = hide gui + "fps boost it" (default false)
+true = dont touch gui at all, false = hide + boost gui too (default false)
 
 by potet
 
@@ -36,21 +36,6 @@ local IS_BSS     = game.PlaceId == 1537690962
 local FLAT_COLOR = Color3.fromRGB(163, 162, 165)
 local PARTICLES  = {"ParticleEmitter","Trail","Smoke","Fire","Sparkles"}
 
-local GUI_CLASSES = {
-    ScreenGui=true, BillboardGui=true, SurfaceGui=true,
-    Frame=true, ScrollingFrame=true, ViewportFrame=true,
-    TextLabel=true, TextButton=true, TextBox=true,
-    ImageLabel=true, ImageButton=true,
-    UIStroke=true, UIGradient=true, UICorner=true,
-    UIListLayout=true, UIGridLayout=true, UITableLayout=true, UIPageLayout=true,
-    UIAspectRatioConstraint=true, UISizeConstraint=true, UITextSizeConstraint=true,
-    VideoFrame=true,
-}
-
-local function IsGuiInst(inst)
-    return GUI_CLASSES[inst.ClassName] ~= nil
-end
-
 local function IsProtectedDecal(inst)
     if not IS_BSS then return false end
     if not (inst:IsA("Decal") or inst:IsA("Texture")) then return false end
@@ -58,9 +43,24 @@ local function IsProtectedDecal(inst)
     return col ~= nil and inst:IsDescendantOf(col)
 end
 
+local function IsGuiRelated(inst)
+    return inst:IsDescendantOf(ME.PlayerGui)
+        or inst:IsA("ScreenGui") or inst:IsA("BillboardGui") or inst:IsA("SurfaceGui")
+        or inst:IsA("Frame") or inst:IsA("ScrollingFrame") or inst:IsA("ViewportFrame")
+        or inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox")
+        or inst:IsA("ImageLabel") or inst:IsA("ImageButton")
+        or inst:IsA("UIStroke") or inst:IsA("UIGradient") or inst:IsA("UICorner")
+        or inst:IsA("UIListLayout") or inst:IsA("UIGridLayout")
+        or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout")
+        or inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
+        or inst:IsA("UITextSizeConstraint") or inst:IsA("VideoFrame")
+end
+
 pcall(function()
     if setfpscap then setfpscap(_G.fpsCap) end
 end)
+
+task.wait()
 
 pcall(function()
     Lighting.GlobalShadows  = false
@@ -69,16 +69,22 @@ pcall(function()
     Lighting.FogStart       = 9e9
 end)
 
+task.wait()
+
 pcall(function()
     settings().Rendering.QualityLevel        = 1
     settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04
     settings().Rendering.EagerBulkExecution  = true
 end)
 
+task.wait()
+
 pcall(function()
     for _, v in pairs(MaterialService:GetChildren()) do v:Destroy() end
     MaterialService.Use2022Materials = false
 end)
+
+task.wait()
 
 pcall(function()
     local t = workspace:FindFirstChildOfClass("Terrain")
@@ -91,6 +97,8 @@ pcall(function()
     end
 end)
 
+task.wait()
+
 pcall(function()
     workspace.GlobalWind = Vector3.new(0, 0, 0)
 end)
@@ -98,7 +106,7 @@ end)
 local function OptimizeMode1(inst)
     if not inst or not inst.Parent then return end
     if IsProtectedDecal(inst) then return end
-    if _G.Gui and IsGuiInst(inst) then return end
+    if _G.Gui and IsGuiRelated(inst) then return end
 
     if inst:IsA("SpecialMesh") then
         inst:Destroy()
@@ -123,13 +131,13 @@ local function OptimizeMode1(inst)
     elseif inst:IsA("Decal") or inst:IsA("Texture") then
         inst:Destroy()
     elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
-        if not _G.Gui then inst.Enabled = false end
+        inst.Enabled = false
     elseif inst:IsA("Beam") then
         inst.Enabled = false
     elseif inst:IsA("Highlight") or inst:IsA("SelectionHighlight") then
         inst:Destroy()
     elseif inst:IsA("ViewportFrame") then
-        if not _G.Gui then inst.Visible = false end
+        inst.Visible = false
     elseif inst:IsA("Humanoid") then
         inst.HealthDisplayDistance = 0
         inst.NameDisplayDistance   = 0
@@ -163,7 +171,7 @@ end
 local function OptimizeMode2Extra(inst)
     if not inst or not inst.Parent then return end
     if IsProtectedDecal(inst) then return end
-    if _G.Gui and IsGuiInst(inst) then return end
+    if _G.Gui and IsGuiRelated(inst) then return end
 
     if inst:IsA("BasePart") or inst:IsA("MeshPart") then
         inst.Color = FLAT_COLOR
@@ -173,7 +181,7 @@ local function OptimizeMode2Extra(inst)
     elseif inst:IsA("Clothing") or inst:IsA("SurfaceAppearance") or inst:IsA("BaseWrap") then
         inst:Destroy()
     elseif inst:IsA("VideoFrame") then
-        if not _G.Gui then inst:Destroy() end
+        inst:Destroy()
     elseif inst:IsA("Sound") then
         inst:Destroy()
     elseif inst:IsA("Animation") then
@@ -188,25 +196,21 @@ local function OptimizeMode2Extra(inst)
             end)
         end
     elseif inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
-        if not _G.Gui then
-            inst.Image            = ""
-            inst.BackgroundColor3 = Color3.new(0, 0, 0)
-        end
+        inst.Image            = ""
+        inst.BackgroundColor3 = Color3.new(0, 0, 0)
     elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
-        if not _G.Gui then
-            inst.TextScaled = false
-            inst.RichText   = false
-            inst.TextSize   = 8
-            inst.Font       = Enum.Font.SourceSans
-        end
+        inst.TextScaled = false
+        inst.RichText   = false
+        inst.TextSize   = 8
+        inst.Font       = Enum.Font.SourceSans
     elseif inst:IsA("UIStroke") or inst:IsA("UIGradient") or inst:IsA("UICorner") then
-        if not _G.Gui then inst:Destroy() end
+        inst:Destroy()
     elseif inst:IsA("UIListLayout") or inst:IsA("UIGridLayout")
         or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout") then
-        if not _G.Gui then inst:Destroy() end
+        inst:Destroy()
     elseif inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
         or inst:IsA("UITextSizeConstraint") then
-        if not _G.Gui then inst:Destroy() end
+        inst:Destroy()
     end
 end
 
@@ -290,11 +294,25 @@ local function RescanDecals()
     task.spawn(function()
         while true do
             task.wait(5)
+            local i = 0
             for _, v in pairs(game:GetDescendants()) do
                 if (v:IsA("Decal") or v:IsA("Texture")) and not IsProtectedDecal(v) then
                     pcall(function() v:Destroy() end)
                 end
+                i += 1
+                if i % 100 == 0 then task.wait() end
             end
+        end
+    end)
+end
+
+local function BatchScan(fn)
+    task.spawn(function()
+        local i = 0
+        for _, v in pairs(game:GetDescendants()) do
+            pcall(fn, v)
+            i += 1
+            if i % 100 == 0 then task.wait() end
         end
     end)
 end
@@ -322,9 +340,7 @@ end)
 
 if LVL == 1 then
 
-    task.spawn(function()
-        for _, v in pairs(game:GetDescendants()) do pcall(OptimizeMode1, v) end
-    end)
+    BatchScan(OptimizeMode1)
     pcall(StripPlayer, ME.Character)
     ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
     game.DescendantAdded:Connect(function(v)
@@ -336,11 +352,12 @@ if LVL == 1 then
 elseif LVL == 2 then
 
     NukeLighting()
+    task.wait()
     NukeSound()
+    task.wait()
 
-    task.spawn(function()
-        for _, v in pairs(game:GetDescendants()) do pcall(OptimizeMode2, v) end
-    end)
+    BatchScan(OptimizeMode2)
+
     game.DescendantAdded:Connect(function(v)
         if not v or not v.Parent then return end
         pcall(OptimizeMode2, v)
@@ -377,17 +394,20 @@ elseif LVL == 2 then
 elseif LVL == 3 then
 
     NukeLighting()
+    task.wait()
     NukeSound()
+    task.wait()
+
+    BatchScan(OptimizeMode2)
 
     task.spawn(function()
-        for _, v in pairs(game:GetDescendants()) do pcall(OptimizeMode2, v) end
-    end)
-
-    task.spawn(function()
+        local i = 0
         for _, v in pairs(game:GetDescendants()) do
             if v:IsA("BasePart") then
                 pcall(function() v.Transparency = 1 end)
             end
+            i += 1
+            if i % 100 == 0 then task.wait() end
         end
     end)
 
@@ -436,6 +456,7 @@ elseif LVL == 3 then
     end
 
     pcall(function() workspace.SignalBehavior   = Enum.SignalBehavior.Immediate end)
+    task.wait()
     pcall(function() workspace.StreamingEnabled = false end)
     pcall(function() workspace:SetAttribute("StreamingMinRadius", 0) end)
 

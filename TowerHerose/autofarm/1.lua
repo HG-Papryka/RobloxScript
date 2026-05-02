@@ -1,10 +1,26 @@
 --[[
     by potet
     tower heroes autofarm
-    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child (OPTIONAL cuz hes chill)
+    needs: Spectre / Lemonade Cat / Scientist / Dumpster Child (optional)
     run in lobby first, teleports to game automatically
-    ~200 coins a hour (AUTOSKIP)
+    ~200 coins a hour (AUTOSKIP - ON)
+
+
+Chef / Wizard (~105C/H)
+https://github.com/HG-Papryka/RobloxScript/blob/main/TowerHerose/autofarm/0.lua
+
 ]]
+
+local TeleportService = game:GetService("TeleportService")
+local GuiService = game:GetService("GuiService")
+local Players = game:GetService("Players")
+
+GuiService.ErrorMessageChanged:Connect(function(msg)
+    if msg and msg ~= "" then
+        task.wait(10)
+        TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
+    end
+end)
 
 if game.PlaceId==4646477729 then
     local RS=game:GetService("ReplicatedStorage")
@@ -25,22 +41,12 @@ if game.PlaceId==4646477729 then
 end
 
 local RS = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
 local VIM = game:GetService("VirtualInputManager")
-local GuiService = game:GetService("GuiService")
-local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 local TroopPlace = RS:WaitForChild("Events"):WaitForChild("TroopPlace")
 local TroopEvent = RS:WaitForChild("Events"):WaitForChild("TroopEvent")
 local TroopFolder = workspace:WaitForChild("Troop")
 local UpdateTargeting = RS:WaitForChild("Events"):WaitForChild("UpdateTargeting")
-
-GuiService.ErrorMessageChanged:Connect(function(errorMessage)
-    if errorMessage and errorMessage ~= "" then
-        task.wait(10)
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    end
-end)
 
 LocalPlayer:GetMouse().Icon = "rbxasset://textures/Blank.png"
 

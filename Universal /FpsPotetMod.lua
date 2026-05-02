@@ -8,7 +8,7 @@ _G.fpscap = 5/67/2/60/1e6
 yk you can set any fps cap or leave it for fps unlocking
 
 _G.Gui = true/false
-true = keep gui working, false = destroy gui (default false)
+true = dont touch gui at all, false = hide gui + fps boost it (default false)
 
 by potet
 
@@ -35,6 +35,21 @@ local LVL        = _G.PotetMod
 local IS_BSS     = game.PlaceId == 1537690962
 local FLAT_COLOR = Color3.fromRGB(163, 162, 165)
 local PARTICLES  = {"ParticleEmitter","Trail","Smoke","Fire","Sparkles"}
+
+local GUI_CLASSES = {
+    ScreenGui=true, BillboardGui=true, SurfaceGui=true,
+    Frame=true, ScrollingFrame=true, ViewportFrame=true,
+    TextLabel=true, TextButton=true, TextBox=true,
+    ImageLabel=true, ImageButton=true,
+    UIStroke=true, UIGradient=true, UICorner=true,
+    UIListLayout=true, UIGridLayout=true, UITableLayout=true, UIPageLayout=true,
+    UIAspectRatioConstraint=true, UISizeConstraint=true, UITextSizeConstraint=true,
+    VideoFrame=true,
+}
+
+local function IsGuiInst(inst)
+    return GUI_CLASSES[inst.ClassName] ~= nil
+end
 
 local function IsProtectedDecal(inst)
     if not IS_BSS then return false end
@@ -80,13 +95,10 @@ pcall(function()
     workspace.GlobalWind = Vector3.new(0, 0, 0)
 end)
 
-local function IsGui(inst)
-    return inst:IsA("ScreenGui") or inst:IsA("BillboardGui") or inst:IsA("SurfaceGui")
-end
-
 local function OptimizeMode1(inst)
     if not inst or not inst.Parent then return end
     if IsProtectedDecal(inst) then return end
+    if _G.Gui and IsGuiInst(inst) then return end
 
     if inst:IsA("SpecialMesh") then
         inst:Destroy()
@@ -111,13 +123,13 @@ local function OptimizeMode1(inst)
     elseif inst:IsA("Decal") or inst:IsA("Texture") then
         inst:Destroy()
     elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
-        inst.Enabled = false
+        if not _G.Gui then inst.Enabled = false end
     elseif inst:IsA("Beam") then
         inst.Enabled = false
     elseif inst:IsA("Highlight") or inst:IsA("SelectionHighlight") then
         inst:Destroy()
     elseif inst:IsA("ViewportFrame") then
-        inst.Visible = false
+        if not _G.Gui then inst.Visible = false end
     elseif inst:IsA("Humanoid") then
         inst.HealthDisplayDistance = 0
         inst.NameDisplayDistance   = 0
@@ -151,6 +163,7 @@ end
 local function OptimizeMode2Extra(inst)
     if not inst or not inst.Parent then return end
     if IsProtectedDecal(inst) then return end
+    if _G.Gui and IsGuiInst(inst) then return end
 
     if inst:IsA("BasePart") or inst:IsA("MeshPart") then
         inst.Color = FLAT_COLOR
@@ -160,7 +173,7 @@ local function OptimizeMode2Extra(inst)
     elseif inst:IsA("Clothing") or inst:IsA("SurfaceAppearance") or inst:IsA("BaseWrap") then
         inst:Destroy()
     elseif inst:IsA("VideoFrame") then
-        inst:Destroy()
+        if not _G.Gui then inst:Destroy() end
     elseif inst:IsA("Sound") then
         inst:Destroy()
     elseif inst:IsA("Animation") then
@@ -175,21 +188,25 @@ local function OptimizeMode2Extra(inst)
             end)
         end
     elseif inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
-        inst.Image            = ""
-        inst.BackgroundColor3 = Color3.new(0, 0, 0)
+        if not _G.Gui then
+            inst.Image            = ""
+            inst.BackgroundColor3 = Color3.new(0, 0, 0)
+        end
     elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
-        inst.TextScaled = false
-        inst.RichText   = false
-        inst.TextSize   = 8
-        inst.Font       = Enum.Font.SourceSans
+        if not _G.Gui then
+            inst.TextScaled = false
+            inst.RichText   = false
+            inst.TextSize   = 8
+            inst.Font       = Enum.Font.SourceSans
+        end
     elseif inst:IsA("UIStroke") or inst:IsA("UIGradient") or inst:IsA("UICorner") then
-        inst:Destroy()
+        if not _G.Gui then inst:Destroy() end
     elseif inst:IsA("UIListLayout") or inst:IsA("UIGridLayout")
         or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout") then
-        inst:Destroy()
+        if not _G.Gui then inst:Destroy() end
     elseif inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
         or inst:IsA("UITextSizeConstraint") then
-        inst:Destroy()
+        if not _G.Gui then inst:Destroy() end
     end
 end
 
@@ -380,7 +397,7 @@ elseif LVL == 3 then
         if v:IsA("BasePart") then
             pcall(function() v.Transparency = 1 end)
         end
-        if not _G.Gui and IsGui(v) then
+        if not _G.Gui and v:IsA("ScreenGui") then
             pcall(function() v.Enabled = false end)
         end
     end)

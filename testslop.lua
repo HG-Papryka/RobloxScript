@@ -154,7 +154,6 @@ for _, p in pairs(parts) do
     part.CastShadow = false
     part.TopSurface = Enum.SurfaceType.Smooth
     part.BottomSurface = Enum.SurfaceType.Smooth
-    part.CollisionFidelity = Enum.CollisionFidelity.Box
     part.Parent = folder
 end
 

@@ -1,22 +1,6 @@
---[[
-Paste it on top of loadastring thingy
-
-_G.PotetMod = 1/2/3
-1 for bad graphic but playable 2 for max preformace tho in the middle and 3 max of the max pref only autofarm
-
-_G.fpscap = 5/67/2/60/1e6 
-yk you can set any fps cap or leave it for fps unlocking
-
-_G.Gui = true/false
-true = dont touch gui at all, false = hide + boost gui too (default false)
-
-by potet
-
-]]
-
-_G.PotetMod = _G.PotetMod or 1
-_G.fpsCap   = _G.fpsCap   or 1e6
-_G.Gui      = (_G.Gui ~= nil) and _G.Gui or false
+_G.cam    = _G.cam    or 3
+_G.Gui    = (_G.Gui ~= nil) and _G.Gui or false
+_G.fpsCap = _G.fpsCap or 1e6
 
 if not game:IsLoaded() then
     repeat task.wait() until game:IsLoaded()
@@ -30,21 +14,41 @@ local SoundService     = game:GetService("SoundService")
 local StarterGui       = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 
-local ME         = Players.LocalPlayer
-local LVL        = _G.PotetMod
-local IS_BSS     = game.PlaceId == 1537690962
-local FLAT_COLOR = Color3.fromRGB(163, 162, 165)
-local PARTICLES  = {"ParticleEmitter","Trail","Smoke","Fire","Sparkles"}
+local bye1 = Players.LocalPlayer
+local bye2 = game.PlaceId == 1537690962
+local bye3 = Color3.fromRGB(163, 162, 165)
+local bye4 = {"ParticleEmitter","Trail","Smoke","Fire","Sparkles"}
+local bye5 = workspace.CurrentCamera
 
-local function IsProtectedDecal(inst)
-    if not IS_BSS then return false end
+local pq  = {}
+local pqr = false
+
+local function hi1(fn, inst)
+    table.insert(pq, {fn, inst})
+    if pqr then return end
+    pqr = true
+    task.spawn(function()
+        while #pq > 0 do
+            local batch = pq
+            pq = {}
+            for _, item in pairs(batch) do
+                pcall(item[1], item[2])
+            end
+            task.wait()
+        end
+        pqr = false
+    end)
+end
+
+local function hi2(inst)
+    if not bye2 then return false end
     if not (inst:IsA("Decal") or inst:IsA("Texture")) then return false end
     local col = workspace:FindFirstChild("Collectibles")
     return col ~= nil and inst:IsDescendantOf(col)
 end
 
-local function IsGuiRelated(inst)
-    return inst:IsDescendantOf(ME.PlayerGui)
+local function hi3(inst)
+    return inst:IsDescendantOf(bye1.PlayerGui)
         or inst:IsA("ScreenGui") or inst:IsA("BillboardGui") or inst:IsA("SurfaceGui")
         or inst:IsA("Frame") or inst:IsA("ScrollingFrame") or inst:IsA("ViewportFrame")
         or inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox")
@@ -54,6 +58,299 @@ local function IsGuiRelated(inst)
         or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout")
         or inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
         or inst:IsA("UITextSizeConstraint") or inst:IsA("VideoFrame")
+end
+
+local function hi4(inst)
+    if not inst or not inst.Parent then return end
+    if hi2(inst) then return end
+    if _G.Gui and hi3(inst) then return end
+
+    if inst:IsA("SpecialMesh") then
+        inst:Destroy()
+    elseif inst:IsA("DataModelMesh") then
+        inst:Destroy()
+    elseif inst:IsA("FaceInstance") then
+        inst.Transparency = 1
+        inst.Shiny        = 0
+    elseif inst:IsA("ShirtGraphic") then
+        inst.Graphic = ""
+    elseif table.find(bye4, inst.ClassName) then
+        pcall(function() inst.Enabled = false end)
+    elseif inst:IsA("PostEffect") then
+        inst.Enabled = false
+    elseif inst:IsA("Explosion") then
+        inst.BlastPressure = 0
+        inst.BlastRadius   = 0
+        inst.Visible       = false
+    elseif inst:IsA("Sound") then
+        inst:Destroy()
+    elseif inst:IsA("Decal") or inst:IsA("Texture") then
+        inst:Destroy()
+    elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
+        inst.Enabled = false
+    elseif inst:IsA("Beam") then
+        inst.Enabled = false
+    elseif inst:IsA("Highlight") or inst:IsA("SelectionHighlight") then
+        inst:Destroy()
+    elseif inst:IsA("ViewportFrame") then
+        inst.Visible = false
+    elseif inst:IsA("Humanoid") then
+        inst.HealthDisplayDistance = 0
+        inst.NameDisplayDistance   = 0
+        inst.DisplayDistanceType   = Enum.HumanoidDisplayDistanceType.None
+    elseif inst:IsA("MeshPart") then
+        inst.RenderFidelity = Enum.RenderFidelity.Automatic
+        inst.Reflectance    = 0
+        inst.Material       = Enum.Material.Plastic
+        inst.TextureID      = ""
+        pcall(function() inst.CastShadow = false end)
+    elseif inst:IsA("BasePart") then
+        inst.Material       = Enum.Material.Plastic
+        inst.Reflectance    = 0
+        inst.Color          = bye3
+        inst.RenderFidelity = Enum.RenderFidelity.Automatic
+        pcall(function() inst.CastShadow = false end)
+    elseif inst:IsA("Model") then
+        inst.LevelOfDetail = Enum.ModelLevelOfDetail.Disabled
+    elseif inst:IsA("Sky") or inst:IsA("Atmosphere") then
+        inst:Destroy()
+    elseif inst:IsA("PointLight") or inst:IsA("SpotLight") or inst:IsA("SurfaceLight") then
+        inst:Destroy()
+    elseif inst:IsA("SelectionBox") or inst:IsA("SelectionSphere") then
+        inst:Destroy()
+    elseif inst:IsA("BoxHandleAdornment") or inst:IsA("SphereHandleAdornment")
+        or inst:IsA("ConeHandleAdornment") or inst:IsA("CylinderHandleAdornment")
+        or inst:IsA("LineHandleAdornment") or inst:IsA("ImageHandleAdornment") then
+        inst:Destroy()
+    elseif inst:IsA("Constraint") or inst:IsA("RopeConstraint")
+        or inst:IsA("SpringConstraint") or inst:IsA("RodConstraint") then
+        pcall(function() inst:Destroy() end)
+    elseif inst:IsA("Clothing") or inst:IsA("SurfaceAppearance") or inst:IsA("BaseWrap") then
+        inst:Destroy()
+    elseif inst:IsA("Animation") then
+        inst:Destroy()
+    elseif inst:IsA("AnimationController") then
+        local an = inst:FindFirstChildOfClass("Animator")
+        if an then
+            pcall(function()
+                for _, t in pairs(an:GetPlayingAnimationTracks()) do t:Stop(0) end
+            end)
+        end
+    elseif inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
+        inst.Image            = ""
+        inst.BackgroundColor3 = Color3.new(0,0,0)
+    elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
+        inst.TextScaled = false
+        inst.RichText   = false
+        inst.TextSize   = 8
+        inst.Font       = Enum.Font.SourceSans
+    elseif inst:IsA("UIStroke") or inst:IsA("UIGradient") or inst:IsA("UICorner") then
+        inst:Destroy()
+    elseif inst:IsA("UIListLayout") or inst:IsA("UIGridLayout")
+        or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout") then
+        inst:Destroy()
+    elseif inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
+        or inst:IsA("UITextSizeConstraint") then
+        inst:Destroy()
+    end
+end
+
+local function hi5(char)
+    if not char then return end
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("Accessory") or v:IsA("Hat") then
+            v:Destroy()
+        elseif v:IsA("Shirt") or v:IsA("Pants") or v:IsA("ShirtGraphic") then
+            v:Destroy()
+        elseif v:IsA("SurfaceAppearance") or v:IsA("BaseWrap") then
+            v:Destroy()
+        elseif v:IsA("SpecialMesh") then
+            v:Destroy()
+        elseif v:IsA("BasePart") then
+            v.Material    = Enum.Material.Plastic
+            v.Reflectance = 0
+            v.Color       = bye3
+            pcall(function() v.CastShadow = false end)
+        end
+    end
+end
+
+local function hi6(char)
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local an  = hum and hum:FindFirstChildOfClass("Animator")
+    if an then
+        pcall(function()
+            for _, t in pairs(an:GetPlayingAnimationTracks()) do t:Stop(0) end
+        end)
+    end
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("Animation") or v:IsA("AnimationTrack") then
+            pcall(function() v:Destroy() end)
+        elseif v:IsA("Animator") then
+            pcall(function()
+                for _, t in pairs(v:GetPlayingAnimationTracks()) do
+                    t:Stop(0)
+                    t:Destroy()
+                end
+            end)
+        end
+    end
+end
+
+local function hi7(char)
+    if not char then return end
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            pcall(function() v.Transparency = 1 end)
+        end
+    end
+    char.DescendantAdded:Connect(function(v)
+        if v:IsA("BasePart") then
+            pcall(function() v.Transparency = 1 end)
+        end
+    end)
+end
+
+local function hi8()
+    pcall(function()
+        Lighting.Technology               = Enum.Technology.Compatibility
+        Lighting.Brightness               = 2
+        Lighting.Ambient                  = Color3.new(1,1,1)
+        Lighting.OutdoorAmbient           = Color3.new(1,1,1)
+        Lighting.ClockTime                = 14
+        Lighting.GeographicLatitude       = 0
+        Lighting.EnvironmentDiffuseScale  = 0
+        Lighting.EnvironmentSpecularScale = 0
+        Lighting.ExposureCompensation     = 0
+        Lighting.ColorShift_Bottom        = Color3.new(0,0,0)
+        Lighting.ColorShift_Top           = Color3.new(0,0,0)
+        for _, v in pairs(Lighting:GetChildren()) do
+            if v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("PostEffect") then
+                v:Destroy()
+            end
+        end
+    end)
+end
+
+local function hi9()
+    pcall(function()
+        SoundService.AmbientReverb  = Enum.ReverbType.NoReverb
+        SoundService.DistanceFactor = 1e9
+        SoundService.RolloffScale   = 0
+    end)
+end
+
+local function hi10()
+    task.spawn(function()
+        while true do
+            task.wait(5)
+            local i = 0
+            for _, v in pairs(game:GetDescendants()) do
+                if (v:IsA("Decal") or v:IsA("Texture")) and not hi2(v) then
+                    pcall(function() v:Destroy() end)
+                end
+                i += 1
+                if i % 100 == 0 then task.wait() end
+            end
+        end
+    end)
+end
+
+local function hi11()
+    task.spawn(function()
+        while true do
+            task.wait(3)
+            local i = 0
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("PointLight") or v:IsA("SpotLight") or v:IsA("SurfaceLight") then
+                    pcall(function() v:Destroy() end)
+                end
+                i += 1
+                if i % 100 == 0 then task.wait() end
+            end
+            pcall(function()
+                Lighting.Ambient        = Color3.new(1,1,1)
+                Lighting.OutdoorAmbient = Color3.new(1,1,1)
+                Lighting.Brightness     = 2
+            end)
+        end
+    end)
+end
+
+local function hi12(fn)
+    task.spawn(function()
+        local i = 0
+        for _, v in pairs(game:GetDescendants()) do
+            pcall(fn, v)
+            i += 1
+            if i % 100 == 0 then task.wait() end
+        end
+    end)
+end
+
+local function hi13()
+    task.spawn(function()
+        while true do
+            task.wait(30)
+            pcall(function() collectgarbage("collect") end)
+        end
+    end)
+end
+
+local function hi14(p)
+    if p == bye1 then return end
+    pcall(hi5, p.Character)
+    pcall(hi6, p.Character)
+    pcall(hi7, p.Character)
+    p.CharacterAdded:Connect(function(c)
+        task.wait(0.1)
+        pcall(hi5, c)
+        pcall(hi6, c)
+        pcall(hi7, c)
+    end)
+end
+
+local function hi15()
+    if not bye2 then return end
+
+    local bye6 = {
+        workspace:FindFirstChild("Balloons") and workspace.Balloons:FindFirstChild("FieldBalloons"),
+        workspace:FindFirstChild("Bees"),
+        workspace:FindFirstChild("Cave"),
+        workspace:FindFirstChild("Clouds"),
+        workspace:FindFirstChild("Cubs"),
+        workspace:FindFirstChild("Decorations"),
+        workspace:FindFirstChild("FieldDecos"),
+        workspace:FindFirstChild("Flowers"),
+        workspace:FindFirstChild("Frogs"),
+        workspace:FindFirstChild("Gates"),
+        workspace:FindFirstChild("HiveDeco"),
+        workspace:FindFirstChild("Honeycombs"),
+        workspace:FindFirstChild("Leaderboards"),
+        workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Boundary"),
+        workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Fences"),
+        workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Walls"),
+        workspace:FindFirstChild("Happenings"),
+        workspace:FindFirstChild("HivePlatforms"),
+        workspace:FindFirstChild("Planters"),
+    }
+
+    for _, v in pairs(bye6) do
+        if v then pcall(function() v:Destroy() end) end
+    end
+end
+
+local function hi16(char)
+    if not char then return end
+    local root = char:WaitForChild("HumanoidRootPart", 5)
+    if not root then return end
+    local gyro = root:FindFirstChildOfClass("BodyGyro") or Instance.new("BodyGyro")
+    gyro.MaxTorque = Vector3.new(0, 1e5, 0)
+    gyro.D         = 100
+    gyro.P         = 1e4
+    gyro.CFrame    = root.CFrame
+    gyro.Parent    = root
 end
 
 pcall(function()
@@ -94,389 +391,139 @@ pcall(function()
         t.WaterReflectance  = 0
         t.WaterTransparency = 0
         t.Decoration        = false
+        t.Transparency      = 1
     end
 end)
 
 task.wait()
 
 pcall(function()
-    workspace.GlobalWind = Vector3.new(0, 0, 0)
+    workspace.GlobalWind              = Vector3.new(0,0,0)
+    workspace.MeshUnionsEnabled       = false
+    workspace.PhysicsSteppingMethod   = Enum.PhysicsSteppingMethod.Fixed
+    workspace.InterpolationThrottling = Enum.InterpolationThrottlingMode.Disabled
+    workspace.Gravity                 = 196.2
+    workspace.SignalBehavior          = Enum.SignalBehavior.Immediate
+    workspace.StreamingEnabled        = false
+    workspace:SetAttribute("StreamingMinRadius", 0)
+    workspace:SetAttribute("LevelOfDetailEnabled", false)
 end)
 
-local function OptimizeMode1(inst)
-    if not inst or not inst.Parent then return end
-    if IsProtectedDecal(inst) then return end
-    if _G.Gui and IsGuiRelated(inst) then return end
+task.wait()
 
-    if inst:IsA("SpecialMesh") then
-        inst:Destroy()
-    elseif inst:IsA("DataModelMesh") then
-        inst:Destroy()
-    elseif inst:IsA("FaceInstance") then
-        inst.Transparency = 1
-        inst.Shiny        = 0
-    elseif inst:IsA("ShirtGraphic") then
-        inst.Graphic = ""
-    elseif table.find(PARTICLES, inst.ClassName) then
-        pcall(function() inst.Enabled = false end)
-    elseif inst:IsA("PostEffect") then
-        inst.Enabled = false
-    elseif inst:IsA("Explosion") then
-        inst.BlastPressure = 0
-        inst.BlastRadius   = 0
-        inst.Visible       = false
-    elseif inst:IsA("Sound") then
-        inst.Volume = 0
-        inst:Stop()
-    elseif inst:IsA("Decal") or inst:IsA("Texture") then
-        inst:Destroy()
-    elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
-        inst.Enabled = false
-    elseif inst:IsA("Beam") then
-        inst.Enabled = false
-    elseif inst:IsA("Highlight") or inst:IsA("SelectionHighlight") then
-        inst:Destroy()
-    elseif inst:IsA("ViewportFrame") then
-        inst.Visible = false
-    elseif inst:IsA("Humanoid") then
-        inst.HealthDisplayDistance = 0
-        inst.NameDisplayDistance   = 0
-        inst.DisplayDistanceType   = Enum.HumanoidDisplayDistanceType.None
-    elseif inst:IsA("MeshPart") then
-        inst.RenderFidelity = Enum.RenderFidelity.Automatic
-        inst.Reflectance    = 0
-        inst.Material       = Enum.Material.Plastic
-        inst.TextureID      = ""
-        pcall(function() inst.CastShadow = false end)
-    elseif inst:IsA("BasePart") then
-        inst.Material       = Enum.Material.Plastic
-        inst.Reflectance    = 0
-        inst.RenderFidelity = Enum.RenderFidelity.Automatic
-        pcall(function() inst.CastShadow = false end)
-    elseif inst:IsA("Model") then
-        inst.LevelOfDetail = Enum.ModelLevelOfDetail.Disabled
-    elseif inst:IsA("Sky") or inst:IsA("Atmosphere") then
-        inst:Destroy()
-    elseif inst:IsA("PointLight") or inst:IsA("SpotLight") or inst:IsA("SurfaceLight") then
-        inst.Enabled = false
-    elseif inst:IsA("SelectionBox") or inst:IsA("SelectionSphere") then
-        inst:Destroy()
-    elseif inst:IsA("BoxHandleAdornment") or inst:IsA("SphereHandleAdornment")
-        or inst:IsA("ConeHandleAdornment") or inst:IsA("CylinderHandleAdornment")
-        or inst:IsA("LineHandleAdornment") or inst:IsA("ImageHandleAdornment") then
-        inst:Destroy()
-    end
-end
+hi8()
+task.wait()
+hi9()
+task.wait()
 
-local function OptimizeMode2Extra(inst)
-    if not inst or not inst.Parent then return end
-    if IsProtectedDecal(inst) then return end
-    if _G.Gui and IsGuiRelated(inst) then return end
+hi12(hi4)
 
-    if inst:IsA("BasePart") or inst:IsA("MeshPart") then
-        inst.Color = FLAT_COLOR
-        pcall(function() inst.TextureID = "" end)
-    elseif inst:IsA("Decal") or inst:IsA("Texture") then
-        inst:Destroy()
-    elseif inst:IsA("Clothing") or inst:IsA("SurfaceAppearance") or inst:IsA("BaseWrap") then
-        inst:Destroy()
-    elseif inst:IsA("VideoFrame") then
-        inst:Destroy()
-    elseif inst:IsA("Sound") then
-        inst:Destroy()
-    elseif inst:IsA("Animation") then
-        inst:Destroy()
-    elseif inst:IsA("AnimationController") then
-        local anim = inst:FindFirstChildOfClass("Animator")
-        if anim then
-            pcall(function()
-                for _, track in pairs(anim:GetPlayingAnimationTracks()) do
-                    track:Stop(0)
-                end
-            end)
-        end
-    elseif inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
-        inst.Image            = ""
-        inst.BackgroundColor3 = Color3.new(0, 0, 0)
-    elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
-        inst.TextScaled = false
-        inst.RichText   = false
-        inst.TextSize   = 8
-        inst.Font       = Enum.Font.SourceSans
-    elseif inst:IsA("UIStroke") or inst:IsA("UIGradient") or inst:IsA("UICorner") then
-        inst:Destroy()
-    elseif inst:IsA("UIListLayout") or inst:IsA("UIGridLayout")
-        or inst:IsA("UITableLayout") or inst:IsA("UIPageLayout") then
-        inst:Destroy()
-    elseif inst:IsA("UIAspectRatioConstraint") or inst:IsA("UISizeConstraint")
-        or inst:IsA("UITextSizeConstraint") then
-        inst:Destroy()
-    end
-end
-
-local function OptimizeMode2(inst)
-    OptimizeMode1(inst)
-    OptimizeMode2Extra(inst)
-end
-
-local function StripPlayer(char)
-    if not char then return end
-    for _, v in pairs(char:GetDescendants()) do
-        if v:IsA("Accessory") or v:IsA("Hat") then
-            v:Destroy()
-        elseif v:IsA("Shirt") or v:IsA("Pants") or v:IsA("ShirtGraphic") then
-            v:Destroy()
-        elseif v:IsA("SurfaceAppearance") or v:IsA("BaseWrap") then
-            v:Destroy()
-        elseif v:IsA("SpecialMesh") then
-            v:Destroy()
-        elseif v:IsA("BasePart") then
-            v.Material    = Enum.Material.Plastic
-            v.Reflectance = 0
-            v.Color       = FLAT_COLOR
-            pcall(function() v.CastShadow = false end)
-        end
-    end
-end
-
-local function FreezeAnims(char)
-    if not char then return end
-    local hum  = char:FindFirstChildOfClass("Humanoid")
-    local anim = hum and hum:FindFirstChildOfClass("Animator")
-    if anim then
-        pcall(function()
-            for _, track in pairs(anim:GetPlayingAnimationTracks()) do
-                track:Stop(0)
-            end
-        end)
-    end
-end
-
-local function HideChar(char)
-    if not char then return end
-    for _, v in pairs(char:GetDescendants()) do
+task.spawn(function()
+    local i = 0
+    for _, v in pairs(game:GetDescendants()) do
         if v:IsA("BasePart") then
             pcall(function() v.Transparency = 1 end)
         end
-    end
-end
-
-local function NukeLighting()
-    pcall(function()
-        Lighting.Technology               = Enum.Technology.Compatibility
-        Lighting.Brightness               = 2
-        Lighting.Ambient                  = Color3.new(1,1,1)
-        Lighting.OutdoorAmbient           = Color3.new(1,1,1)
-        Lighting.ClockTime                = 14
-        Lighting.GeographicLatitude       = 0
-        Lighting.EnvironmentDiffuseScale  = 0
-        Lighting.EnvironmentSpecularScale = 0
-        Lighting.ExposureCompensation     = 0
-        Lighting.ColorShift_Bottom        = Color3.new(0,0,0)
-        Lighting.ColorShift_Top           = Color3.new(0,0,0)
-        for _, v in pairs(Lighting:GetChildren()) do
-            if v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("PostEffect") then
-                v:Destroy()
-            end
-        end
-    end)
-end
-
-local function NukeSound()
-    pcall(function()
-        SoundService.AmbientReverb  = Enum.ReverbType.NoReverb
-        SoundService.DistanceFactor = 1e9
-        SoundService.RolloffScale   = 0
-    end)
-end
-
-local function RescanDecals()
-    task.spawn(function()
-        while true do
-            task.wait(5)
-            local i = 0
-            for _, v in pairs(game:GetDescendants()) do
-                if (v:IsA("Decal") or v:IsA("Texture")) and not IsProtectedDecal(v) then
-                    pcall(function() v:Destroy() end)
-                end
-                i += 1
-                if i % 100 == 0 then task.wait() end
-            end
-        end
-    end)
-end
-
-local function BatchScan(fn)
-    task.spawn(function()
-        local i = 0
-        for _, v in pairs(game:GetDescendants()) do
-            pcall(fn, v)
-            i += 1
-            if i % 100 == 0 then task.wait() end
-        end
-    end)
-end
-
-local function OnPlayerAdded(p)
-    if p == ME then return end
-    pcall(StripPlayer, p.Character)
-    pcall(FreezeAnims, p.Character)
-    p.CharacterAdded:Connect(function(c)
-        task.wait(0.5)
-        pcall(StripPlayer, c)
-        pcall(FreezeAnims, c)
-    end)
-end
-
-Players.PlayerAdded:Connect(function(p)
-    OnPlayerAdded(p)
-    if LVL == 3 then
-        p.CharacterAdded:Connect(function(c)
-            task.wait(0.5)
-            pcall(HideChar, c)
-        end)
+        i += 1
+        if i % 100 == 0 then task.wait() end
     end
 end)
 
-if LVL == 1 then
-
-    BatchScan(OptimizeMode1)
-    pcall(StripPlayer, ME.Character)
-    ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
-    game.DescendantAdded:Connect(function(v)
-        if not v or not v.Parent then return end
-        pcall(OptimizeMode1, v)
-    end)
-    RescanDecals()
-
-elseif LVL == 2 then
-
-    NukeLighting()
-    task.wait()
-    NukeSound()
-    task.wait()
-
-    BatchScan(OptimizeMode2)
-
-    game.DescendantAdded:Connect(function(v)
-        if not v or not v.Parent then return end
-        pcall(OptimizeMode2, v)
-    end)
-
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= ME then
-            pcall(StripPlayer, p.Character)
-            pcall(FreezeAnims, p.Character)
-            p.CharacterAdded:Connect(function(c)
-                task.wait(0.5)
-                pcall(StripPlayer, c)
-                pcall(FreezeAnims, c)
-            end)
-        end
+game.DescendantAdded:Connect(function(v)
+    if not v or not v.Parent then return end
+    hi1(hi4, v)
+    if v:IsA("BasePart") then
+        pcall(function() v.Transparency = 1 end)
     end
-
-    pcall(StripPlayer, ME.Character)
-    ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
-
-    workspace.CurrentCamera.FieldOfView = 30
-
-    pcall(function() workspace.SignalBehavior   = Enum.SignalBehavior.Immediate end)
-    pcall(function() workspace.StreamingEnabled = false end)
-    pcall(function() workspace:SetAttribute("StreamingMinRadius", 0) end)
-
-    pcall(function()
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat,       false)
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health,     false)
-    end)
-    RescanDecals()
-
-elseif LVL == 3 then
-
-    NukeLighting()
-    task.wait()
-    NukeSound()
-    task.wait()
-
-    BatchScan(OptimizeMode2)
-
-    task.spawn(function()
-        local i = 0
-        for _, v in pairs(game:GetDescendants()) do
-            if v:IsA("BasePart") then
-                pcall(function() v.Transparency = 1 end)
-            end
-            i += 1
-            if i % 100 == 0 then task.wait() end
-        end
-    end)
-
-    game.DescendantAdded:Connect(function(v)
-        if not v or not v.Parent then return end
-        pcall(OptimizeMode2, v)
-        if v:IsA("BasePart") then
-            pcall(function() v.Transparency = 1 end)
-        end
-        if not _G.Gui and v:IsA("ScreenGui") then
-            pcall(function() v.Enabled = false end)
-        end
-    end)
-
-    pcall(StripPlayer, ME.Character)
-    ME.CharacterAdded:Connect(function(c) task.wait(0.5) pcall(StripPlayer, c) end)
-
-    pcall(function()
-        local t = workspace:FindFirstChildOfClass("Terrain")
-        if t then t.Transparency = 1 end
-    end)
-
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= ME then
-            pcall(StripPlayer, p.Character)
-            pcall(FreezeAnims, p.Character)
-            pcall(HideChar, p.Character)
-            p.CharacterAdded:Connect(function(c)
-                task.wait(0.5)
-                pcall(StripPlayer, c)
-                pcall(FreezeAnims, c)
-                pcall(HideChar, c)
-            end)
-        end
+    if not _G.Gui and v:IsA("ScreenGui") then
+        pcall(function() v.Enabled = false end)
     end
+end)
 
-    if not _G.Gui then
-        for _, sg in pairs(ME.PlayerGui:GetChildren()) do
-            if sg:IsA("ScreenGui") then sg.Enabled = false end
-        end
-        ME.PlayerGui.ChildAdded:Connect(function(sg)
-            if sg:IsA("ScreenGui") then sg.Enabled = false end
-        end)
-        pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) end)
-        pcall(function() UserInputService.MouseIconEnabled = false end)
+pcall(hi5, bye1.Character)
+bye1.CharacterAdded:Connect(function(c)
+    task.wait(0.1)
+    pcall(hi5, c)
+    if _G.cam == 3 then pcall(hi16, c) end
+end)
+
+for _, p in pairs(Players:GetPlayers()) do
+    hi14(p)
+end
+
+Players.PlayerAdded:Connect(hi14)
+
+if not _G.Gui then
+    for _, sg in pairs(bye1.PlayerGui:GetChildren()) do
+        if sg:IsA("ScreenGui") then sg.Enabled = false end
     end
+    bye1.PlayerGui.ChildAdded:Connect(function(sg)
+        if sg:IsA("ScreenGui") then sg.Enabled = false end
+    end)
+    pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) end)
+    pcall(function() UserInputService.MouseIconEnabled = false end)
+end
 
-    pcall(function() workspace.SignalBehavior   = Enum.SignalBehavior.Immediate end)
-    task.wait()
-    pcall(function() workspace.StreamingEnabled = false end)
-    pcall(function() workspace:SetAttribute("StreamingMinRadius", 0) end)
+pcall(function()
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat,       false)
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health,     false)
+end)
 
-    local cam = workspace.CurrentCamera
-    cam.FieldOfView  = 1
-    cam.HeadLocked   = false
-    pcall(function() cam.CameraSubject = nil end)
+pcall(function()
+    for _, conn in pairs(RunService:GetConnections()) do
+        pcall(function() conn:Disconnect() end)
+    end
+end)
 
-    RescanDecals()
+hi10()
+hi11()
+hi13()
+hi15()
+
+if _G.cam == 1 then
+
+    bye5.HeadLocked = false
+
+elseif _G.cam == 2 then
+
+    bye1.CameraMaxZoomDistance = 676767
 
     RunService.RenderStepped:Connect(function()
-        local root = ME.Character and ME.Character:FindFirstChild("HumanoidRootPart")
+        local root = bye1.Character and bye1.Character:FindFirstChild("HumanoidRootPart")
         if root then
-            cam.CameraType = Enum.CameraType.Scriptable
-            cam.CFrame = CFrame.new(
-                root.Position + Vector3.new(0, 5, 0),
-                root.Position + Vector3.new(0, 5 + 999, 0)
+            bye5.CameraType = Enum.CameraType.Scriptable
+            bye5.CFrame = CFrame.new(
+                root.Position + Vector3.new(0, 100, 0),
+                root.Position
             )
         end
     end)
 
+elseif _G.cam == 3 then
+
+    bye5.FieldOfView = 10
+    bye5.HeadLocked  = false
+    pcall(function() bye5.CameraSubject = nil end)
+
+    pcall(hi16, bye1.Character)
+
+    RunService.RenderStepped:Connect(function()
+        local root = bye1.Character and bye1.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            bye5.CameraType = Enum.CameraType.Scriptable
+            bye5.CFrame = CFrame.new(
+                root.Position + Vector3.new(0, 5, 0),
+                root.Position + Vector3.new(0, 5 + 999, 0)
+            )
+            local gyro = root:FindFirstChildOfClass("BodyGyro")
+            if gyro then
+                local flat = Vector3.new(bye5.CFrame.LookVector.X, 0, bye5.CFrame.LookVector.Z)
+                if flat.Magnitude > 0 then
+                    gyro.CFrame = CFrame.new(root.Position, root.Position + flat)
+                end
+            end
+        end
+    end)
+
 end
---  pcall(function() save us 

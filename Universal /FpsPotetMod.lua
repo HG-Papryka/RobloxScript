@@ -278,14 +278,93 @@ local function hi11()
     end)
 end
 
+local bye8, bye9
+
 local function hi12(fn)
     task.spawn(function()
         local i = 0
-        for _, v in pairs(game:GetDescendants()) do
+        local all = game:GetDescendants()
+        local total = #all
+        for _, v in pairs(all) do
             pcall(fn, v)
             i += 1
-            if i % 100 == 0 then task.wait() end
+            if i % 100 == 0 then
+                if bye9 then
+                    pcall(function()
+                        bye9.Text = "del " .. (v.Name or "???")
+                    end)
+                end
+                task.wait()
+            end
         end
+        task.wait(0.5)
+        if bye8 then
+            pcall(function() bye8:Destroy() end)
+            bye8 = nil
+            bye9 = nil
+        end
+    end)
+end
+
+local function hi17()
+    pcall(function()
+        local sg = Instance.new("ScreenGui")
+        sg.Name            = "p_load"
+        sg.ResetOnSpawn    = false
+        sg.DisplayOrder    = 9999
+        sg.IgnoreGuiInset  = true
+        sg.Parent          = bye1.PlayerGui
+
+        local bg = Instance.new("Frame")
+        bg.Size                  = UDim2.fromScale(1, 1)
+        bg.Position              = UDim2.fromScale(0, 0)
+        bg.BackgroundColor3      = Color3.new(0, 0, 0)
+        bg.BackgroundTransparency = 0.3
+        bg.BorderSizePixel       = 0
+        bg.Parent                = sg
+
+        local title = Instance.new("TextLabel")
+        title.Size               = UDim2.new(1, 0, 0, 120)
+        title.Position           = UDim2.new(0, 0, 0.25, 0)
+        title.BackgroundTransparency = 1
+        title.Text               = "Potetium"
+        title.TextColor3         = Color3.fromRGB(58, 100, 214)
+        title.Font               = Enum.Font.GothamBlack
+        title.TextScaled         = true
+        title.Parent             = bg
+
+        local loading = Instance.new("TextLabel")
+        loading.Size             = UDim2.new(1, 0, 0, 50)
+        loading.Position         = UDim2.new(0, 0, 0.52, 0)
+        loading.BackgroundTransparency = 1
+        loading.Text             = "LOADING..."
+        loading.TextColor3       = Color3.new(1, 1, 1)
+        loading.Font             = Enum.Font.GothamBold
+        loading.TextScaled       = true
+        loading.Parent           = bg
+
+        local status = Instance.new("TextLabel")
+        status.Size              = UDim2.new(0.8, 0, 0, 30)
+        status.Position          = UDim2.new(0.1, 0, 0.64, 0)
+        status.BackgroundTransparency = 1
+        status.Text              = ""
+        status.TextColor3        = Color3.fromRGB(180, 180, 180)
+        status.Font              = Enum.Font.Gotham
+        status.TextScaled        = true
+        status.Parent            = bg
+
+        bye8 = sg
+        bye9 = status
+
+        task.spawn(function()
+            local dots = {"LOADING.", "LOADING..", "LOADING..."}
+            local d = 1
+            while bye8 do
+                pcall(function() loading.Text = dots[d] end)
+                d = d % #dots + 1
+                task.wait(0.4)
+            end
+        end)
     end)
 end
 
@@ -416,6 +495,7 @@ task.wait()
 hi9()
 task.wait()
 
+hi17()
 hi12(hi4)
 
 task.spawn(function()

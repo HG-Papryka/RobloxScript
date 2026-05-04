@@ -1,4 +1,4 @@
-_G.cam    = _G.cam    or 3
+_G.cam    = _G.cam    or 1
 _G.Gui    = (_G.Gui ~= nil) and _G.Gui or false
 _G.fpsCap = _G.fpsCap or 1e6
 

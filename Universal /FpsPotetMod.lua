@@ -284,11 +284,10 @@ local function hi12(fn)
     task.spawn(function()
         local i = 0
         local all = game:GetDescendants()
-        local total = #all
         for _, v in pairs(all) do
             pcall(fn, v)
             i += 1
-            if i % 100 == 0 then
+            if i % 500 == 0 then
                 if bye9 then
                     pcall(function()
                         bye9.Text = "del " .. (v.Name or "???")
@@ -297,12 +296,45 @@ local function hi12(fn)
                 task.wait()
             end
         end
-        task.wait(0.5)
+
+        if bye9 then pcall(function() bye9.Text = "done!" end) end
+        task.wait(0.3)
+
         if bye8 then
-            pcall(function() bye8:Destroy() end)
+            pcall(function()
+                local bg = bye8:FindFirstChildOfClass("Frame")
+                if bg then
+                    for t = 1, 20 do
+                        bg.BackgroundTransparency = 0.3 + (0.7 * (t / 20))
+                        for _, lbl in pairs(bg:GetChildren()) do
+                            if lbl:IsA("TextLabel") then
+                                lbl.TextTransparency = t / 20
+                            end
+                        end
+                        task.wait(0.03)
+                    end
+                end
+                bye8:Destroy()
+            end)
             bye8 = nil
             bye9 = nil
         end
+
+        if not _G.Gui then
+            for _, sg in pairs(bye1.PlayerGui:GetChildren()) do
+                if sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
+                    sg.Enabled = false
+                end
+            end
+            pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) end)
+            pcall(function() UserInputService.MouseIconEnabled = false end)
+        end
+
+        pcall(function()
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat,       false)
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health,     false)
+        end)
     end)
 end
 
@@ -533,21 +565,12 @@ end
 
 Players.PlayerAdded:Connect(hi14)
 
-if not _G.Gui then
-    for _, sg in pairs(bye1.PlayerGui:GetChildren()) do
-        if sg:IsA("ScreenGui") then sg.Enabled = false end
+bye1.PlayerGui.ChildAdded:Connect(function(sg)
+    if not _G.Gui and sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
+        if not bye8 then
+            sg.Enabled = false
+        end
     end
-    bye1.PlayerGui.ChildAdded:Connect(function(sg)
-        if sg:IsA("ScreenGui") then sg.Enabled = false end
-    end)
-    pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) end)
-    pcall(function() UserInputService.MouseIconEnabled = false end)
-end
-
-pcall(function()
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat,       false)
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health,     false)
 end)
 
 pcall(function()

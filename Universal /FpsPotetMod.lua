@@ -431,7 +431,7 @@ local function hi15()
         workspace:FindFirstChild("Cave"),
         workspace:FindFirstChild("Clouds"),
         workspace:FindFirstChild("Cubs"),
-        workspace:FindFirstChild("Decorations"),
+        -- workspace:FindFirstChild("Decorations"),
         workspace:FindFirstChild("FieldDecos"),
         workspace:FindFirstChild("Flowers"),
         workspace:FindFirstChild("Frogs"),

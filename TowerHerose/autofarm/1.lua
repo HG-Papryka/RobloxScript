@@ -112,7 +112,7 @@ local TOWER_DATA = {
     { name="Spectre",      max=1, texture="rbxassetid://8273607953" },
     { name="Scientist",    max=5, texture="rbxassetid://7118338906" },
     { name="Lemonade Cat", max=4, texture="rbxassetid://8273477941" },
-    { name="Oddport",      max=1, texture="rbxassetid://16597907208", optional=true },
+    { name="Oddport",      max=1, texture="rbxassetid://8273332230", optional=true },
 }
 
 local b = Instance.new("ScreenGui")

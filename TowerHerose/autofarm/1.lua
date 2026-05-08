@@ -222,6 +222,8 @@ end)
 
 local function c1(obj)
     if not obj then return end
+    if not obj.Visible then return end
+    if obj.AbsoluteSize == Vector2.zero then return end
     local inset = GuiService:GetGuiInset()
     local pos   = obj.AbsolutePosition
     local size  = obj.AbsoluteSize
@@ -238,6 +240,10 @@ local function c2(btn)
     if not btn then return end
     pcall(function() btn.MouseButton1Click:Fire() end)
     c1(btn)
+end
+
+local function c3()
+    return #TroopFolder:GetChildren() > 0
 end
 
 local function d1()
@@ -267,7 +273,7 @@ local function waitForButton(getBtn, timeout)
     local t = 0
     while t < timeout do
         local btn = getBtn()
-        if btn and btn.Visible then return btn end
+        if btn and btn.Visible and btn.AbsoluteSize ~= Vector2.zero then return btn end
         task.wait(0.5)
         t = t + 0.5
     end
@@ -288,8 +294,16 @@ task.spawn(function()
     while true do
         local ready = waitForButton(d1, 60)
         if ready then task.wait(0.2) c2(ready) end
+
         local leave = waitForButton(d2, 300)
-        if leave then task.wait(0.2) c2(leave) end
+        if leave then
+            if c3() then
+                task.wait(0.2)
+                c2(leave)
+            end
+        end
+
+        task.wait(1)
     end
 end)
 

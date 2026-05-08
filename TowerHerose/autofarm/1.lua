@@ -353,14 +353,16 @@ task.spawn(function()
 end)
 
 if _G.Spin then
-    task.spawn(function()
+    local function applySpin()
         local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local root = char:WaitForChild("HumanoidRootPart")
         local bav = Instance.new("BodyAngularVelocity")
         bav.AngularVelocity = Vector3.new(0, 10, 0)
         bav.MaxTorque = Vector3.new(0, math.huge, 0)
         bav.Parent = root
-    end)
+    end
+    applySpin()
+    LocalPlayer.CharacterAdded:Connect(applySpin)
 end
 
 --[[

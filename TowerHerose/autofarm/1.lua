@@ -22,6 +22,33 @@ GuiService.ErrorMessageChanged:Connect(function(msg)
     end
 end)
 
+task.spawn(function()
+    while true do
+        pcall(function()
+            for _, v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+                if v:IsA("TextButton") and (
+                    v.Text == "Reconnect" or
+                    v.Text == "Rejoin" or
+                    v.Text == "OK"
+                ) and v.Visible then
+                    task.wait(0.5)
+                    local inset = GuiService:GetGuiInset()
+                    local pos  = v.AbsolutePosition
+                    local size = v.AbsoluteSize
+                    local x = pos.X + size.X / 2
+                    local y = pos.Y + size.Y / 2 + inset.Y
+                    game:GetService("VirtualInputManager"):SendMouseMoveEvent(x, y, game)
+                    task.wait(0.02)
+                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(x, y, 0, true, game, 0)
+                    task.wait(0.05)
+                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(x, y, 0, false, game, 0)
+                end
+            end
+        end)
+        task.wait(2)
+    end
+end)
+
 if game.PlaceId == 4646477729 then
     local RS = game:GetService("ReplicatedStorage")
 
@@ -242,10 +269,6 @@ local function c2(btn)
     c1(btn)
 end
 
-local function c3()
-    return #TroopFolder:GetChildren() > 0
-end
-
 local function d1()
     local menu = LocalPlayer.PlayerGui:FindFirstChild("Menu")
     return menu
@@ -294,15 +317,8 @@ task.spawn(function()
     while true do
         local ready = waitForButton(d1, 60)
         if ready then task.wait(0.2) c2(ready) end
-
         local leave = waitForButton(d2, 300)
-        if leave then
-            if c3() then
-                task.wait(0.2)
-                c2(leave)
-            end
-        end
-
+        if leave then task.wait(0.2) c2(leave) end
         task.wait(1)
     end
 end)

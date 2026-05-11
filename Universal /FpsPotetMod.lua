@@ -1,6 +1,26 @@
+--[[
+    FIXES:
+    - pq/hi1 kolejka: WYLOCZONA -> task.defer
+    - game.DescendantAdded -> workspace.DescendantAdded (nie lapie skryptow/GUI)
+    - hi4 Decal+Texture przeniesione PRZED FaceInstance (bug - decale dostawaly tylko transparency=1)
+    - hi4 MeshPart: +Transparency = 1
+    - hi4 BasePart: +Transparency = 1
+    - petla transparency po hi12: WYLOCZONA (redundantna po fixie hi4)
+    - hi10/hi11 wywolania: WYLOCZONE
+    - PhysicsSteppingMethod: Fixed -> Adaptive
+    - StreamingEnabled = false: WYLOCZONE
+    - RunService GetConnections disconnect: WYLOCZONE
+    - closeLoadingGui(): osobna funkcja, klik gdziekolwiek zamyka GUI
+    - _G zachowane + lokalne kopie cam/Gui/fpsCap dla backtestow bez _G
+]]
+
 _G.cam    = _G.cam    or 1
 _G.Gui    = (_G.Gui ~= nil) and _G.Gui or false
 _G.fpsCap = _G.fpsCap or 1e6
+
+local cam    = _G.cam
+local Gui    = _G.Gui
+local fpsCap = _G.fpsCap
 
 if not game:IsLoaded() then
     repeat task.wait() until game:IsLoaded()
@@ -20,6 +40,9 @@ local bye3 = Color3.fromRGB(163, 162, 165)
 local bye4 = {"ParticleEmitter","Trail","Smoke","Fire","Sparkles"}
 local bye5 = workspace.CurrentCamera
 
+local bye8, bye9
+
+--[[
 local pq  = {}
 local pqr = false
 
@@ -39,6 +62,7 @@ local function hi1(fn, inst)
         pqr = false
     end)
 end
+]]
 
 local function hi2(inst)
     if not bye2 then return false end
@@ -63,11 +87,13 @@ end
 local function hi4(inst)
     if not inst or not inst.Parent then return end
     if hi2(inst) then return end
-    if _G.Gui and hi3(inst) then return end
+    if Gui and hi3(inst) then return end
 
     if inst:IsA("SpecialMesh") then
         inst:Destroy()
     elseif inst:IsA("DataModelMesh") then
+        inst:Destroy()
+    elseif inst:IsA("Decal") or inst:IsA("Texture") then
         inst:Destroy()
     elseif inst:IsA("FaceInstance") then
         inst.Transparency = 1
@@ -83,8 +109,6 @@ local function hi4(inst)
         inst.BlastRadius   = 0
         inst.Visible       = false
     elseif inst:IsA("Sound") then
-        inst:Destroy()
-    elseif inst:IsA("Decal") or inst:IsA("Texture") then
         inst:Destroy()
     elseif inst:IsA("BillboardGui") or inst:IsA("SurfaceGui") then
         inst.Enabled = false
@@ -103,11 +127,13 @@ local function hi4(inst)
         inst.Reflectance    = 0
         inst.Material       = Enum.Material.Plastic
         inst.TextureID      = ""
+        inst.Transparency   = 1
         pcall(function() inst.CastShadow = false end)
     elseif inst:IsA("BasePart") then
         inst.Material       = Enum.Material.Plastic
         inst.Reflectance    = 0
         inst.Color          = bye3
+        inst.Transparency   = 1
         inst.RenderFidelity = Enum.RenderFidelity.Automatic
         pcall(function() inst.CastShadow = false end)
     elseif inst:IsA("Model") then
@@ -278,7 +304,29 @@ local function hi11()
     end)
 end
 
-local bye8, bye9
+local function closeLoadingGui()
+    if not bye8 then return end
+    local sg = bye8
+    bye8 = nil
+    bye9 = nil
+    task.spawn(function()
+        pcall(function()
+            local bg = sg:FindFirstChildOfClass("Frame")
+            if bg then
+                for t = 1, 20 do
+                    bg.BackgroundTransparency = 0.3 + (0.7 * (t / 20))
+                    for _, lbl in pairs(bg:GetChildren()) do
+                        if lbl:IsA("TextLabel") then
+                            lbl.TextTransparency = t / 20
+                        end
+                    end
+                    task.wait(0.03)
+                end
+            end
+            sg:Destroy()
+        end)
+    end)
+end
 
 local function hi12(fn)
     task.spawn(function()
@@ -299,28 +347,9 @@ local function hi12(fn)
 
         if bye9 then pcall(function() bye9.Text = "done!" end) end
         task.wait(0.3)
+        closeLoadingGui()
 
-        if bye8 then
-            pcall(function()
-                local bg = bye8:FindFirstChildOfClass("Frame")
-                if bg then
-                    for t = 1, 20 do
-                        bg.BackgroundTransparency = 0.3 + (0.7 * (t / 20))
-                        for _, lbl in pairs(bg:GetChildren()) do
-                            if lbl:IsA("TextLabel") then
-                                lbl.TextTransparency = t / 20
-                            end
-                        end
-                        task.wait(0.03)
-                    end
-                end
-                bye8:Destroy()
-            end)
-            bye8 = nil
-            bye9 = nil
-        end
-
-        if not _G.Gui then
+        if not Gui then
             for _, sg in pairs(bye1.PlayerGui:GetChildren()) do
                 if sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
                     sg.Enabled = false
@@ -334,68 +363,6 @@ local function hi12(fn)
             StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat,       false)
             StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
             StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health,     false)
-        end)
-    end)
-end
-
-local function hi17()
-    pcall(function()
-        local sg = Instance.new("ScreenGui")
-        sg.Name            = "p_load"
-        sg.ResetOnSpawn    = false
-        sg.DisplayOrder    = 9999
-        sg.IgnoreGuiInset  = true
-        sg.Parent          = bye1.PlayerGui
-
-        local bg = Instance.new("Frame")
-        bg.Size                  = UDim2.fromScale(1, 1)
-        bg.Position              = UDim2.fromScale(0, 0)
-        bg.BackgroundColor3      = Color3.new(0, 0, 0)
-        bg.BackgroundTransparency = 0.3
-        bg.BorderSizePixel       = 0
-        bg.Parent                = sg
-
-        local title = Instance.new("TextLabel")
-        title.Size               = UDim2.new(1, 0, 0, 120)
-        title.Position           = UDim2.new(0, 0, 0.25, 0)
-        title.BackgroundTransparency = 1
-        title.Text               = "Potetium"
-        title.TextColor3         = Color3.fromRGB(58, 100, 214)
-        title.Font               = Enum.Font.GothamBlack
-        title.TextScaled         = true
-        title.Parent             = bg
-
-        local loading = Instance.new("TextLabel")
-        loading.Size             = UDim2.new(1, 0, 0, 50)
-        loading.Position         = UDim2.new(0, 0, 0.52, 0)
-        loading.BackgroundTransparency = 1
-        loading.Text             = "LOADING..."
-        loading.TextColor3       = Color3.new(1, 1, 1)
-        loading.Font             = Enum.Font.GothamBold
-        loading.TextScaled       = true
-        loading.Parent           = bg
-
-        local status = Instance.new("TextLabel")
-        status.Size              = UDim2.new(0.8, 0, 0, 30)
-        status.Position          = UDim2.new(0.1, 0, 0.64, 0)
-        status.BackgroundTransparency = 1
-        status.Text              = ""
-        status.TextColor3        = Color3.fromRGB(180, 180, 180)
-        status.Font              = Enum.Font.Gotham
-        status.TextScaled        = true
-        status.Parent            = bg
-
-        bye8 = sg
-        bye9 = status
-
-        task.spawn(function()
-            local dots = {"LOADING.", "LOADING..", "LOADING..."}
-            local d = 1
-            while bye8 do
-                pcall(function() loading.Text = dots[d] end)
-                d = d % #dots + 1
-                task.wait(0.4)
-            end
         end)
     end)
 end
@@ -431,7 +398,6 @@ local function hi15()
         workspace:FindFirstChild("Cave"),
         workspace:FindFirstChild("Clouds"),
         workspace:FindFirstChild("Cubs"),
-        -- workspace:FindFirstChild("Decorations"),
         workspace:FindFirstChild("FieldDecos"),
         workspace:FindFirstChild("Flowers"),
         workspace:FindFirstChild("Frogs"),
@@ -464,8 +430,79 @@ local function hi16(char)
     gyro.Parent    = root
 end
 
+local function hi17()
+    pcall(function()
+        local sg = Instance.new("ScreenGui")
+        sg.Name            = "p_load"
+        sg.ResetOnSpawn    = false
+        sg.DisplayOrder    = 9999
+        sg.IgnoreGuiInset  = true
+        sg.Parent          = bye1.PlayerGui
+
+        local bg = Instance.new("Frame")
+        bg.Size                   = UDim2.fromScale(1, 1)
+        bg.Position               = UDim2.fromScale(0, 0)
+        bg.BackgroundColor3       = Color3.new(0, 0, 0)
+        bg.BackgroundTransparency = 0.3
+        bg.BorderSizePixel        = 0
+        bg.Parent                 = sg
+
+        local closeBtn = Instance.new("TextButton")
+        closeBtn.Size                   = UDim2.fromScale(1, 1)
+        closeBtn.Position               = UDim2.fromScale(0, 0)
+        closeBtn.BackgroundTransparency = 1
+        closeBtn.Text                   = ""
+        closeBtn.ZIndex                 = 10
+        closeBtn.Parent                 = bg
+        closeBtn.MouseButton1Click:Connect(closeLoadingGui)
+
+        local title = Instance.new("TextLabel")
+        title.Size                   = UDim2.new(1, 0, 0, 120)
+        title.Position               = UDim2.new(0, 0, 0.25, 0)
+        title.BackgroundTransparency = 1
+        title.Text                   = "Potetium"
+        title.TextColor3             = Color3.fromRGB(58, 100, 214)
+        title.Font                   = Enum.Font.GothamBlack
+        title.TextScaled             = true
+        title.Parent                 = bg
+
+        local loading = Instance.new("TextLabel")
+        loading.Size                   = UDim2.new(1, 0, 0, 50)
+        loading.Position               = UDim2.new(0, 0, 0.52, 0)
+        loading.BackgroundTransparency = 1
+        loading.Text                   = "LOADING..."
+        loading.TextColor3             = Color3.new(1, 1, 1)
+        loading.Font                   = Enum.Font.GothamBold
+        loading.TextScaled             = true
+        loading.Parent                 = bg
+
+        local status = Instance.new("TextLabel")
+        status.Size                   = UDim2.new(0.8, 0, 0, 30)
+        status.Position               = UDim2.new(0.1, 0, 0.64, 0)
+        status.BackgroundTransparency = 1
+        status.Text                   = ""
+        status.TextColor3             = Color3.fromRGB(180, 180, 180)
+        status.Font                   = Enum.Font.Gotham
+        status.TextScaled             = true
+        status.Parent                 = bg
+
+        bye8 = sg
+        bye9 = status
+
+        task.spawn(function()
+            local dots = {"LOADING.", "LOADING..", "LOADING..."}
+            local d = 1
+            while bye8 do
+                pcall(function() loading.Text = dots[d] end)
+                d = d % #dots + 1
+                task.wait(0.4)
+            end
+        end)
+    end)
+end
+
 pcall(function()
-    if setfpscap then setfpscap(_G.fpsCap) end
+    if setfpscap then setfpscap(fpsCap) end
 end)
 
 task.wait()
@@ -511,13 +548,15 @@ task.wait()
 pcall(function()
     workspace.GlobalWind              = Vector3.new(0,0,0)
     workspace.MeshUnionsEnabled       = false
-    workspace.PhysicsSteppingMethod   = Enum.PhysicsSteppingMethod.Fixed
+    workspace.PhysicsSteppingMethod   = Enum.PhysicsSteppingMethod.Adaptive
     workspace.InterpolationThrottling = Enum.InterpolationThrottlingMode.Disabled
     workspace.Gravity                 = 196.2
     workspace.SignalBehavior          = Enum.SignalBehavior.Immediate
-    workspace.StreamingEnabled        = false
-    workspace:SetAttribute("StreamingMinRadius", 0)
     workspace:SetAttribute("LevelOfDetailEnabled", false)
+    --[[
+    workspace.StreamingEnabled = false
+    workspace:SetAttribute("StreamingMinRadius", 0)
+    ]]
 end)
 
 task.wait()
@@ -530,6 +569,7 @@ task.wait()
 hi17()
 hi12(hi4)
 
+--[[
 task.spawn(function()
     local i = 0
     for _, v in pairs(game:GetDescendants()) do
@@ -540,15 +580,13 @@ task.spawn(function()
         if i % 100 == 0 then task.wait() end
     end
 end)
+]]
 
-game.DescendantAdded:Connect(function(v)
+workspace.DescendantAdded:Connect(function(v)
     if not v or not v.Parent then return end
-    hi1(hi4, v)
+    task.defer(hi4, v)
     if v:IsA("BasePart") then
         pcall(function() v.Transparency = 1 end)
-    end
-    if not _G.Gui and v:IsA("ScreenGui") then
-        pcall(function() v.Enabled = false end)
     end
 end)
 
@@ -556,7 +594,7 @@ pcall(hi5, bye1.Character)
 bye1.CharacterAdded:Connect(function(c)
     task.wait(0.1)
     pcall(hi5, c)
-    if _G.cam == 3 then pcall(hi16, c) end
+    if cam == 3 then pcall(hi16, c) end
 end)
 
 for _, p in pairs(Players:GetPlayers()) do
@@ -566,29 +604,34 @@ end
 Players.PlayerAdded:Connect(hi14)
 
 bye1.PlayerGui.ChildAdded:Connect(function(sg)
-    if not _G.Gui and sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
+    if not Gui and sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
         if not bye8 then
             sg.Enabled = false
         end
     end
 end)
 
+--[[
 pcall(function()
     for _, conn in pairs(RunService:GetConnections()) do
         pcall(function() conn:Disconnect() end)
     end
 end)
+]]
 
+--[[
 hi10()
 hi11()
+]]
+
 hi13()
 hi15()
 
-if _G.cam == 1 then
+if cam == 1 then
 
     bye5.HeadLocked = false
 
-elseif _G.cam == 2 then
+elseif cam == 2 then
 
     bye1.CameraMaxZoomDistance = 676767
 
@@ -603,7 +646,7 @@ elseif _G.cam == 2 then
         end
     end)
 
-elseif _G.cam == 3 then
+elseif cam == 3 then
 
     bye5.FieldOfView = 10
     bye5.HeadLocked  = false

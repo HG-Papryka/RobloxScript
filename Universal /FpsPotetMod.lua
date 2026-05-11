@@ -1,26 +1,29 @@
 --[[
     FIXES:
-    - pq/hi1 kolejka: WYLOCZONA -> task.defer
-    - game.DescendantAdded -> workspace.DescendantAdded (nie lapie skryptow/GUI)
-    - hi4 Decal+Texture przeniesione PRZED FaceInstance (bug - decale dostawaly tylko transparency=1)
+    - pq/hi1 queue: DISABLED -> task.defer
+    - game.DescendantAdded -> workspace.DescendantAdded
+    - hi4 Decal+Texture moved BEFORE FaceInstance (bug: decals got transparency=1 instead of Destroy)
     - hi4 MeshPart: +Transparency = 1
     - hi4 BasePart: +Transparency = 1
-    - petla transparency po hi12: WYLOCZONA (redundantna po fixie hi4)
-    - hi10/hi11 wywolania: WYLOCZONE
+    - transparency loop after hi12: DISABLED (redundant after hi4 fix)
     - PhysicsSteppingMethod: Fixed -> Adaptive
-    - StreamingEnabled = false: WYLOCZONE
-    - RunService GetConnections disconnect: WYLOCZONE
-    - closeLoadingGui(): osobna funkcja, klik gdziekolwiek zamyka GUI
-    - _G zachowane + lokalne kopie cam/Gui/fpsCap dla backtestow bez _G
+    - RunService GetConnections disconnect: DISABLED (breaks engine internals)
+    - closeLoadingGui(): standalone function, click anywhere to close
+    TOGGLES (_G):
+    - _G.cam           = 1          -- 1=normal  2=topdown  3=firstperson
+    - _G.Gui           = false       -- true = keep game GUI visible
+    - _G.fpsCap        = 1e6        -- fps cap value
+    - _G.sweepTextures = false       -- periodic texture sweep every 5s (expensive, off by default)
+    - _G.sweepLights   = false       -- periodic light sweep every 3s (expensive, off by default)
+    - _G.noStreaming   = false       -- force disable workspace streaming (dangerous in streaming games)
 ]]
 
-_G.cam    = _G.cam    or 1
-_G.Gui    = (_G.Gui ~= nil) and _G.Gui or false
-_G.fpsCap = _G.fpsCap or 1e6
-
-local cam    = _G.cam
-local Gui    = _G.Gui
-local fpsCap = _G.fpsCap
+_G.cam           = _G.cam                        or 1
+_G.Gui           = (_G.Gui ~= nil) and _G.Gui    or false
+_G.fpsCap        = _G.fpsCap                     or 1e6
+_G.sweepTextures = (_G.sweepTextures ~= nil) and _G.sweepTextures or false
+_G.sweepLights   = (_G.sweepLights   ~= nil) and _G.sweepLights   or false
+_G.noStreaming   = (_G.noStreaming   ~= nil) and _G.noStreaming   or false
 
 if not game:IsLoaded() then
     repeat task.wait() until game:IsLoaded()
@@ -87,7 +90,7 @@ end
 local function hi4(inst)
     if not inst or not inst.Parent then return end
     if hi2(inst) then return end
-    if Gui and hi3(inst) then return end
+    if _G.Gui and hi3(inst) then return end
 
     if inst:IsA("SpecialMesh") then
         inst:Destroy()
@@ -349,7 +352,7 @@ local function hi12(fn)
         task.wait(0.3)
         closeLoadingGui()
 
-        if not Gui then
+        if not _G.Gui then
             for _, sg in pairs(bye1.PlayerGui:GetChildren()) do
                 if sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
                     sg.Enabled = false
@@ -502,7 +505,7 @@ local function hi17()
 end
 
 pcall(function()
-    if setfpscap then setfpscap(fpsCap) end
+    if setfpscap then setfpscap(_G.fpsCap) end
 end)
 
 task.wait()
@@ -553,10 +556,10 @@ pcall(function()
     workspace.Gravity                 = 196.2
     workspace.SignalBehavior          = Enum.SignalBehavior.Immediate
     workspace:SetAttribute("LevelOfDetailEnabled", false)
-    --[[
-    workspace.StreamingEnabled = false
-    workspace:SetAttribute("StreamingMinRadius", 0)
-    ]]
+    if _G.noStreaming then
+        workspace.StreamingEnabled = false
+        workspace:SetAttribute("StreamingMinRadius", 0)
+    end
 end)
 
 task.wait()
@@ -594,7 +597,7 @@ pcall(hi5, bye1.Character)
 bye1.CharacterAdded:Connect(function(c)
     task.wait(0.1)
     pcall(hi5, c)
-    if cam == 3 then pcall(hi16, c) end
+    if _G.cam == 3 then pcall(hi16, c) end
 end)
 
 for _, p in pairs(Players:GetPlayers()) do
@@ -604,7 +607,7 @@ end
 Players.PlayerAdded:Connect(hi14)
 
 bye1.PlayerGui.ChildAdded:Connect(function(sg)
-    if not Gui and sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
+    if not _G.Gui and sg:IsA("ScreenGui") and sg.Name ~= "p_load" then
         if not bye8 then
             sg.Enabled = false
         end
@@ -619,19 +622,17 @@ pcall(function()
 end)
 ]]
 
---[[
-hi10()
-hi11()
-]]
+if _G.sweepTextures then hi10() end
+if _G.sweepLights   then hi11() end
 
 hi13()
 hi15()
 
-if cam == 1 then
+if _G.cam == 1 then
 
     bye5.HeadLocked = false
 
-elseif cam == 2 then
+elseif _G.cam == 2 then
 
     bye1.CameraMaxZoomDistance = 676767
 
@@ -646,7 +647,7 @@ elseif cam == 2 then
         end
     end)
 
-elseif cam == 3 then
+elseif _G.cam == 3 then
 
     bye5.FieldOfView = 10
     bye5.HeadLocked  = false

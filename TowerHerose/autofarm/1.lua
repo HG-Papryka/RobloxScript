@@ -14,11 +14,45 @@ _G.Spin = _G.Spin or false
 local TeleportService = game:GetService("TeleportService")
 local GuiService      = game:GetService("GuiService")
 local Players         = game:GetService("Players")
+local RunService      = game:GetService("RunService")
+
+local LOBBY_ID = 4646477729
+
+local function doRejoin()
+    local targetId = (game.PlaceId ~= LOBBY_ID) and LOBBY_ID or game.PlaceId
+    if queueteleport then
+        queueteleport(([[
+            game:GetService("TeleportService"):Teleport(%d)
+        ]]):format(targetId))
+    end
+    task.wait(1)
+    pcall(function()
+        TeleportService:Teleport(targetId, Players.LocalPlayer)
+    end)
+end
 
 GuiService.ErrorMessageChanged:Connect(function(msg)
     if msg and msg ~= "" then
-        task.wait(10)
-        TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
+        task.wait(8)
+        doRejoin()
+    end
+end)
+
+Players.LocalPlayer.OnTeleport:Connect(function(state)
+    if state == Enum.TeleportState.Failed then
+        task.wait(3)
+        doRejoin()
+    end
+end)
+
+local lastHB = tick()
+RunService.Heartbeat:Connect(function() lastHB = tick() end)
+task.spawn(function()
+    while true do
+        task.wait(5)
+        if tick() - lastHB > 15 then
+            doRejoin()
+        end
     end
 end)
 
@@ -49,7 +83,7 @@ task.spawn(function()
     end
 end)
 
-if game.PlaceId == 4646477729 then
+if game.PlaceId == LOBBY_ID then
     local RS = game:GetService("ReplicatedStorage")
 
     local function a1()

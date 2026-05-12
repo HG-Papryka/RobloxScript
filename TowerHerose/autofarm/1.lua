@@ -284,7 +284,6 @@ end)
 local function c1(obj)
     if not obj then return end
     if not obj.Visible then return end
-    if obj.AbsoluteSize == Vector2.zero then return end
     local inset = GuiService:GetGuiInset()
     local pos   = obj.AbsolutePosition
     local size  = obj.AbsoluteSize

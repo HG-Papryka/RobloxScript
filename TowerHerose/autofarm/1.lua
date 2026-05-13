@@ -1,7 +1,7 @@
 --[[
     by potet
     tower heroes autofarm
-    needs: Spectre / Lemonade Cat / Scientist / Oddport (optional)
+    needs: Spectre / Lemonade Cat / Scientist
     run in lobby first, teleports to game automatically
     ~200 coins a hour (AUTOSKIP - ON)
 
@@ -59,23 +59,29 @@ end)
 task.spawn(function()
     while true do
         pcall(function()
-            for _, v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-                if v:IsA("TextButton") and (
-                    v.Text == "Reconnect" or
-                    v.Text == "Rejoin" or
-                    v.Text == "OK"
-                ) and v.Visible then
-                    task.wait(0.5)
-                    local inset = GuiService:GetGuiInset()
-                    local pos  = v.AbsolutePosition
-                    local size = v.AbsoluteSize
-                    local x = pos.X + size.X / 2
-                    local y = pos.Y + size.Y / 2 + inset.Y
-                    game:GetService("VirtualInputManager"):SendMouseMoveEvent(x, y, game)
-                    task.wait(0.02)
-                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(x, y, 0, true, game, 0)
-                    task.wait(0.05)
-                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(x, y, 0, false, game, 0)
+            local sources = {
+                game:GetService("CoreGui"),
+                Players.LocalPlayer:WaitForChild("PlayerGui"),
+            }
+            for _, root in ipairs(sources) do
+                for _, v in pairs(root:GetDescendants()) do
+                    if v:IsA("TextButton") and (
+                        v.Text == "Reconnect" or
+                        v.Text == "Rejoin" or
+                        v.Text == "OK"
+                    ) and v.Visible then
+                        task.wait(0.5)
+                        local inset = GuiService:GetGuiInset()
+                        local pos  = v.AbsolutePosition
+                        local size = v.AbsoluteSize
+                        local x = pos.X + size.X / 2
+                        local y = pos.Y + size.Y / 2 + inset.Y
+                        game:GetService("VirtualInputManager"):SendMouseMoveEvent(x, y, game)
+                        task.wait(0.02)
+                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(x, y, 0, true, game, 0)
+                        task.wait(0.05)
+                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(x, y, 0, false, game, 0)
+                    end
                 end
             end
         end)
@@ -91,7 +97,8 @@ if game.PlaceId == LOBBY_ID then
             "Chef", "Hotdog Frank", "Volt", "Yasuke", "Mako", "Wizard",
             "Scientist", "Fracture", "Bunny", "Beebo", "Voca", "Branch",
             "Wafer", "Sparks Kilowatt", "Keith", "Soda Pop", "Quinn", "Lure",
-            "Slime King", "Kart Kid", "Jester", "Hayes", "Buzzer", "Oddport",
+            "Slime King", "Kart Kid", "Jester", "Hayes", "Buzzer",
+            --"Oddport",
             "Stella", "El Goblino", "Nuki Launcher", "Byte", "Dumpster Child",
             "Lemonade Cat", "Maitake", "Spectre", "Discount Dog", "Balloon Pal",
         }
@@ -105,7 +112,7 @@ if game.PlaceId == LOBBY_ID then
 
     local function a2()
         local loadout = {
-            { name="Oddport",      slot=1 },
+            --{ name="Oddport",      slot=1 },
             { name="Lemonade Cat", slot=2 },
             { name="Scientist",    slot=3 },
             { name="Spectre",      slot=4 },
@@ -162,7 +169,7 @@ local places = {
     { name="Scientist",    x=10.9268, y=63.3995, z=2.1417,  rot=0 },
     { name="Scientist",    x=7.0622,  y=63.3995, z=5.6291,  rot=0 },
     { name="Scientist",    x=13.3136, y=63.3995, z=8.2517,  rot=0 },
-    { name="Oddport",      x=7.8896,  y=63.3995, z=26.5347, rot=5 },
+    --{ name="Oddport",      x=7.8896,  y=63.3995, z=26.5347, rot=5 },
     { name="Lemonade Cat", x=19.5783, y=63.3495, z=14.2713, rot=2 },
     { name="Lemonade Cat", x=19.5856, y=63.3495, z=18.2217, rot=2 },
     { name="Lemonade Cat", x=19.7608, y=63.3495, z=22.0081, rot=2 },
@@ -173,7 +180,7 @@ local TOWER_DATA = {
     { name="Spectre",      max=1, texture="rbxassetid://8273607953" },
     { name="Scientist",    max=5, texture="rbxassetid://7118338906" },
     { name="Lemonade Cat", max=4, texture="rbxassetid://8273477941" },
-    { name="Oddport",      max=1, texture="rbxassetid://8273332230", optional=true },
+    --{ name="Oddport",      max=1, texture="rbxassetid://8273332230", optional=true },
 }
 
 local b = Instance.new("ScreenGui")
@@ -402,11 +409,11 @@ end)
 task.spawn(function()
     while true do
         for _, troop in ipairs(TroopFolder:GetChildren()) do
-            if troop.Name == "Spectre" or troop.Name == "Oddport" then
+            if troop.Name == "Spectre" then
+                --if troop.Name == "Oddport" then
+                --    UpdateTargeting:FireServer(troop, "Random")
+                --end
                 pcall(function()
-                    if troop.Name == "Oddport" then
-                        UpdateTargeting:FireServer(troop, "Random")
-                    end
                     TroopEvent:FireServer("Upgrade", troop)
                 end)
             end

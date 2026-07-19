@@ -311,7 +311,7 @@ else
 end
 
 am = true
-i("Instant rejoin triggered.")
+i("Idk what to write it BYEEE!!!")
 
 f.PlayAgain:FireServer()
 c(d)

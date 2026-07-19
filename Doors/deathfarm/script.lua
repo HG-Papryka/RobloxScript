@@ -21,9 +21,19 @@ local f = a.ReplicatedStorage:FindFirstChild("RemotesFolder")
 local g = a.Workspace:FindFirstChild("CurrentRooms")
 local h = a.ReplicatedStorage:FindFirstChild("GameData")
 
-local function i(j)
-	if math.random(1, 10000) == 1 then
+local function i(j) -- dont look thats a easter egg >:(
+	if math.random(1, 100000) == 1 then
 		j = "Meow :3"
+		task.spawn(function()
+			local sfx = Instance.new("Sound")
+			sfx.SoundId = "rbxassetid://134881862056957"
+			sfx.Volume = 1
+			sfx.Parent = a.SoundService
+			sfx:Play()
+			sfx.Ended:Connect(function()
+				sfx:Destroy()
+			end)
+		end)
 	end
 	local k = "[WeLovePotet] " .. j
 	print(k)
@@ -35,6 +45,12 @@ local function i(j)
 		end
 	end)
 end
+
+task.delay(30, function()
+	i("Global fallback loop triggered, rejoining...")
+	f.PlayAgain:FireServer()
+	c(d)
+end)
 
 if game.PlaceId == 6516141723 then
 	i("Joining a run...")
@@ -53,7 +69,17 @@ if h and h.Floor.Value ~= "Hotel" then
 	c([==[
 		local RemotesFolder = game:GetService("ReplicatedStorage").RemotesFolder
 		local function SendCaption(Text)
-			if math.random(1, 10000) == 1 then Text = "Meow :3" end
+			if math.random(1, 100000) == 1 then
+				Text = "Meow :3"
+				task.spawn(function()
+					local sfx = Instance.new("Sound")
+					sfx.SoundId = "rbxassetid://134881862056957"
+					sfx.Volume = 1
+					sfx.Parent = game:GetService("SoundService")
+					sfx:Play()
+					sfx.Ended:Connect(function() sfx:Destroy() end)
+				end)
+			end
 			if firesignal then
 				firesignal(RemotesFolder.Caption.OnClientEvent, "[WeLovePotet] " .. Text)
 			else
@@ -79,7 +105,17 @@ if game.PlaceId ~= 6839171747 then
 	c([==[
 		local RemotesFolder = game:GetService("ReplicatedStorage").RemotesFolder
 		local function SendCaption(Text)
-			if math.random(1, 10000) == 1 then Text = "Meow :3" end
+			if math.random(1, 100000) == 1 then
+				Text = "Meow :3"
+				task.spawn(function()
+					local sfx = Instance.new("Sound")
+					sfx.SoundId = "rbxassetid://134881862056957"
+					sfx.Volume = 1
+					sfx.Parent = game:GetService("SoundService")
+					sfx:Play()
+					sfx.Ended:Connect(function() sfx:Destroy() end)
+				end)
+			end
 			if firesignal then
 				firesignal(RemotesFolder.Caption.OnClientEvent, "[WeLovePotet] " .. Text)
 			else
@@ -266,17 +302,7 @@ else
 	f.Underwater:FireServer(true)
 end
 
-local al = false
-task.delay(22, function()
-	if not al then
-		i("Stuck detected, rejoining...")
-		f.PlayAgain:FireServer()
-		c(d)
-	end
-end)
-
 e:GetAttributeChangedSignal("Alive"):Wait()
-al = true
 i("Player has died, joining a new run...")
 
 f.PlayAgain:FireServer()

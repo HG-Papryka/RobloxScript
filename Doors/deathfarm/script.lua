@@ -13,7 +13,7 @@ local a = setmetatable({}, {
 
 local c = queue_on_teleport or queueonteleport
 local d = [==[
-    wait(1)
+    print("meow :3")
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()
 ]==]
 

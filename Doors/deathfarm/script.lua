@@ -21,7 +21,7 @@ local f = a.ReplicatedStorage:FindFirstChild("RemotesFolder")
 local g = a.Workspace:FindFirstChild("CurrentRooms")
 local h = a.ReplicatedStorage:FindFirstChild("GameData")
 
-local function i(j) -- dont look thats a easter egg >:(
+local function i(j) -- dont look :(
 	if math.random(1, 100000) == 1 then
 		j = "Meow :3"
 		task.spawn(function()
@@ -45,12 +45,6 @@ local function i(j) -- dont look thats a easter egg >:(
 		end
 	end)
 end
-
-task.delay(30, function()
-	i("Global fallback loop triggered, rejoining...")
-	f.PlayAgain:FireServer()
-	c(d)
-end)
 
 if game.PlaceId == 6516141723 then
 	i("Joining a run...")
@@ -269,6 +263,14 @@ end
 
 task.wait(1)
 
+local am = false
+task.delay(30, function()
+	if not am then
+		f.PlayAgain:FireServer()
+		c(d)
+	end
+end)
+
 i("Getting the key...")
 local ai = n:FindFirstChild("Door")
 ai.Lock.CanCollide = false
@@ -303,7 +305,7 @@ else
 end
 
 e:GetAttributeChangedSignal("Alive"):Wait()
-i("Player has died, joining a new run...")
+am = true
 
 f.PlayAgain:FireServer()
 c(d)

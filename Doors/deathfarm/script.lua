@@ -5,38 +5,39 @@ end
 print("WeLovePotet death farm for DOORS")
 print("heavily inspired by abbys death farm")
 
-local Services = setmetatable({}, {
-	__index = function(self, Key)
-		return game:GetService(Key)
+local a = setmetatable({}, {
+	__index = function(self, b)
+		return game:GetService(b)
 	end
 })
 
-local QueueTeleport = queue_on_teleport or queueonteleport
-local TeleportCode = [==[
+local c = queue_on_teleport or queueonteleport
+local d = [==[
+    wait(1)
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()
 ]==]
 
-local LocalPlayer = Services.Players.LocalPlayer
-local RemotesFolder = Services.ReplicatedStorage:FindFirstChild("RemotesFolder")
-local CurrentRooms = Services.Workspace:FindFirstChild("CurrentRooms")
-local GameData = Services.ReplicatedStorage:FindFirstChild("GameData")
+local e = a.Players.LocalPlayer
+local f = a.ReplicatedStorage:FindFirstChild("RemotesFolder")
+local g = a.Workspace:FindFirstChild("CurrentRooms")
+local h = a.ReplicatedStorage:FindFirstChild("GameData")
 
-local function SendCaption(Text)
-	local Msg = "[WeLovePotet] " .. Text
-	print(Msg)
+local function i(j)
+	local k = "[WeLovePotet] " .. j
+	print(k)
 	pcall(function()
 		if firesignal then
-			firesignal(RemotesFolder.Caption.OnClientEvent, Msg)
+			firesignal(f.Caption.OnClientEvent, k)
 		else
-			RemotesFolder.CaptionClient:Fire(Msg)
+			f.CaptionClient:Fire(k)
 		end
 	end)
 end
 
 if game.PlaceId == 6516141723 then
-	SendCaption("Joining a run...")
-	QueueTeleport(TeleportCode)
-	RemotesFolder.CreateElevator:FireServer({
+	i("Joining a run...")
+	c(d)
+	f.CreateElevator:FireServer({
 		Mods = {},
 		Settings = {},
 		Destination = "Hotel",
@@ -46,8 +47,8 @@ if game.PlaceId == 6516141723 then
 	return
 end
 
-if GameData and GameData.Floor.Value ~= "Hotel" then
-	QueueTeleport([==[
+if h and h.Floor.Value ~= "Hotel" then
+	c([==[
 		local RemotesFolder = game:GetService("ReplicatedStorage").RemotesFolder
 		local function SendCaption(Text)
 			if firesignal then
@@ -57,7 +58,7 @@ if GameData and GameData.Floor.Value ~= "Hotel" then
 			end
 		end
 		local QueueTeleport = queue_on_teleport or queueonteleport
-		QueueTeleport([=[loadstring(game:HttpGet("PASTE_YOUR_RAW_URL_HERE"))()]=])
+		QueueTeleport([=[loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()]=])
 		SendCaption("Joining a run...")
 		RemotesFolder.CreateElevator:FireServer({
 			Mods = {},
@@ -67,12 +68,12 @@ if GameData and GameData.Floor.Value ~= "Hotel" then
 			MaxPlayers = "1"
 		})
 	]==])
-	RemotesFolder.Lobby:FireServer()
+	f.Lobby:FireServer()
 	return
 end
 
 if game.PlaceId ~= 6839171747 then
-	QueueTeleport([==[
+	c([==[
 		local RemotesFolder = game:GetService("ReplicatedStorage").RemotesFolder
 		local function SendCaption(Text)
 			if firesignal then
@@ -82,7 +83,7 @@ if game.PlaceId ~= 6839171747 then
 			end
 		end
 		local QueueTeleport = queue_on_teleport or queueonteleport
-		QueueTeleport([=[loadstring(game:HttpGet("PASTE_YOUR_RAW_URL_HERE"))()]=])
+		QueueTeleport([=[loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()]=])
 		SendCaption("Joining a run...")
 		RemotesFolder.CreateElevator:FireServer({
 			Mods = {},
@@ -92,95 +93,106 @@ if game.PlaceId ~= 6839171747 then
 			MaxPlayers = "1"
 		})
 	]==])
-	Services.TeleportService:Teleport(6516141723)
+	a.TeleportService:Teleport(6516141723)
 	return
 end
 
-while #CurrentRooms:GetChildren() < 1 or not LocalPlayer.Character do
+while #g:GetChildren() < 1 or not e.Character do
 	task.wait(1)
 end
 
-local MainUI = LocalPlayer.PlayerGui:WaitForChild("MainUI", 9e9)
+local l = e.PlayerGui:WaitForChild("MainUI", 9e9)
 
-if MainUI:FindFirstChild("ItemShop") then
-	MainUI.ItemShop.Visible = false
-	RemotesFolder.PreRunShop:FireServer({}, true)
+if l:FindFirstChild("ItemShop") then
+	l.ItemShop.Visible = false
+	f.PreRunShop:FireServer({}, true)
 end
 
 task.wait(1)
 
-local SkipPrompt = Services.Workspace:FindFirstChild("SkipPrompt", true)
-if SkipPrompt then
-	fireproximityprompt(SkipPrompt)
+local m = a.Workspace:FindFirstChild("SkipPrompt", true)
+if m then
+	fireproximityprompt(m)
 end
 
-local Room0 = CurrentRooms:WaitForChild("0", 9e9)
-local Assets = Room0:WaitForChild("Assets", 9e9)
-local Parts = Room0:FindFirstChild("Parts")
-local RiftSpawn = Room0:FindFirstChild("RiftSpawn")
+local n = g:WaitForChild("0", 9e9)
+local o = n:WaitForChild("Assets", 9e9)
+local p = n:FindFirstChild("Parts")
+local q = n:FindFirstChild("RiftSpawn")
 
-local Kill = {
-	Assets:FindFirstChild("Luggage_Cart_Crouch"),
-	Parts and Parts:FindFirstChild("FrontDesk"),
-	RiftSpawn and RiftSpawn:FindFirstChild("Rift"),
+local r = {
+	o:FindFirstChild("Luggage_Cart_Crouch"),
+	o:FindFirstChild("Desk_Bell"),
+	p and p:FindFirstChild("FrontDesk"),
 }
 
-for _, Object in ipairs(Kill) do
-	if Object then
-		Object:Destroy()
-	end
-end
-
-for _, Object in pairs(Assets:GetChildren()) do
-	if Object.Name == "Potted_Plant" then
-		local Collision = Object:FindFirstChild("Collision")
-		if Collision then
-			Collision.CanCollide = false
+for _, s in ipairs(r) do
+	if s then
+		if s:IsA("BasePart") then
+			s.CanCollide = false
+		end
+		for _, t in ipairs(s:GetDescendants()) do
+			if t:IsA("BasePart") then
+				t.CanCollide = false
+			end
 		end
 	end
 end
 
-local Reach = 2
-
-local function TouchPrompt(Prompt)
-	if not Prompt or not Prompt:IsA("ProximityPrompt") then return end
-	if not Prompt:GetAttribute("HoldDuration_Old") then
-		Prompt:SetAttribute("HoldDuration_Old", Prompt.HoldDuration)
-	end
-	if not Prompt:GetAttribute("MaxActivationDistance_Old") then
-		Prompt:SetAttribute("MaxActivationDistance_Old", Prompt.MaxActivationDistance)
-	end
-	Prompt.HoldDuration = 0
-	Prompt.MaxActivationDistance = Prompt:GetAttribute("MaxActivationDistance_Old") * Reach
+if q and q:FindFirstChild("Rift") then
+	q.Rift:Destroy()
 end
 
-for _, Object in ipairs(Services.Workspace:GetDescendants()) do
-	if Object:IsA("ProximityPrompt") then
-		TouchPrompt(Object)
+for _, s in pairs(o:GetChildren()) do
+	if s.Name == "Potted_Plant" then
+		local u = s:FindFirstChild("Collision")
+		if u then
+			u.CanCollide = false
+		end
 	end
 end
 
-Services.Workspace.DescendantAdded:Connect(function(Object)
-	if Object:IsA("ProximityPrompt") then
-		task.defer(TouchPrompt, Object)
+local v = 2
+
+local function w(x)
+	if not x or not x:IsA("ProximityPrompt") then return end
+	if not x:GetAttribute("HoldDuration_Old") then
+		x:SetAttribute("HoldDuration_Old", x.HoldDuration)
+	end
+	if not x:GetAttribute("MaxActivationDistance_Old") then
+		x:SetAttribute("MaxActivationDistance_Old", x.MaxActivationDistance)
+	end
+	x.HoldDuration = 0
+	x.MaxActivationDistance = x:GetAttribute("MaxActivationDistance_Old") * v
+end
+
+for _, s in ipairs(a.Workspace:GetDescendants()) do
+	if s:IsA("ProximityPrompt") then
+		w(s)
+	end
+end
+
+a.Workspace.DescendantAdded:Connect(function(s)
+	if s:IsA("ProximityPrompt") then
+		task.defer(w, s)
 	end
 end)
 
 task.spawn(function()
 	while task.wait(0.05) do
-		local Root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-		if not Root then continue end
-		for _, Prompt in ipairs(Services.Workspace:GetDescendants()) do
-			if Prompt:IsA("ProximityPrompt") and Prompt.Enabled then
-				local Parent = Prompt.Parent
-				local Name = Parent and Parent.Name or ""
-				if Name == "KeyObtain" or Name == "GoldPile" or Name == "Lock" or Prompt.Name == "ModulePrompt" or Prompt.Name == "UnlockPrompt" then
-					local Anchor = Parent:IsA("BasePart") and Parent or Parent:FindFirstChildWhichIsA("BasePart", true)
-					if not Anchor and Name == "KeyObtain" then
-						Anchor = Parent:FindFirstChild("Hitbox")
+		local y = e.Character and e.Character:FindFirstChild("HumanoidRootPart")
+		if not y then continue end
+		for _, x in ipairs(a.Workspace:GetDescendants()) do
+			if x:IsA("ProximityPrompt") and x.Enabled then
+				local z = x.Parent
+				local ab = z and z.Name or ""
+				if ab == "KeyObtain" or ab == "GoldPile" or ab == "Lock" or x.Name == "ModulePrompt" or x.Name == "UnlockPrompt" then
+					local ac = z:IsA("BasePart") and z or z:FindFirstChildWhichIsA("BasePart", true)
+					if not ac and ab == "KeyObtain" then
+						ac = z:FindFirstChild("Hitbox")
 					end
-					if Anchor and (Root.Position - Anchor.Position).Magnitude <= Prompt.MaxActivationDistance then
-						fireproximityprompt(Prompt)
+					if ac and (y.Position - ac.Position).Magnitude <= x.MaxActivationDistance then
+						fireproximityprompt(x)
 					end
 				end
 			end
@@ -188,20 +200,19 @@ task.spawn(function()
 	end
 end)
 
-local function WalkPosition(TargetPosition)
-	local Humanoid = LocalPlayer.Character:WaitForChild("Humanoid", 9e9)
-
-	local Finished = false
-	local Connection = Services.RunService.RenderStepped:Connect(function()
-		Humanoid:MoveTo(TargetPosition)
-		if LocalPlayer:DistanceFromCharacter(TargetPosition) < 8 then
-			Finished = true
+local ad = {}
+ad.a1 = function(ae)
+	local af = e.Character:WaitForChild("Humanoid", 9e9)
+	local ag = false
+	local ah = a.RunService.RenderStepped:Connect(function()
+		af:MoveTo(ae)
+		if e:DistanceFromCharacter(ae) < 8 then
+			ag = true
 		end
 	end)
-
 	while task.wait() do
-		if Finished then
-			Connection:Disconnect()
+		if ag then
+			ah:Disconnect()
 			break
 		end
 	end
@@ -211,31 +222,41 @@ end
 
 task.wait(1)
 
-SendCaption("Getting the key...")
-local Door = Room0:FindFirstChild("Door")
-Door.Lock.CanCollide = false
+i("Getting the key...")
+local ai = n:FindFirstChild("Door")
+ai.Lock.CanCollide = false
 
-local Key = Assets:WaitForChild("KeyObtain", 9e9)
-WalkPosition(Key.Hitbox.Position)
-fireproximityprompt(Key:FindFirstChild("ModulePrompt", true))
+if o:FindFirstChild("Light_Fixtures") then
+	local aj = o.Light_Fixtures:GetChildren()
+	if aj[6] then
+		local ak = aj[6]:IsA("BasePart") and aj[6] or aj[6]:FindFirstChildWhichIsA("BasePart", true)
+		if ak then
+			ad.a1(ak.Position)
+		end
+	end
+end
 
-SendCaption("Got the key, opening the door...")
-WalkPosition(Door.Lock.Position)
-fireproximityprompt(Door:FindFirstChild("UnlockPrompt", true))
+local al = o:WaitForChild("KeyObtain", 9e9)
+ad.a1(al.Hitbox.Position)
+fireproximityprompt(al:FindFirstChild("ModulePrompt", true))
 
-while not CurrentRooms:FindFirstChild("2") do
+i("Got the key, opening the door...")
+ad.a1(ai.Lock.Position)
+fireproximityprompt(ai:FindFirstChild("UnlockPrompt", true))
+
+while not g:FindFirstChild("2") do
 	task.wait()
 end
 
 if replicatesignal then
-	replicatesignal(LocalPlayer.Kill)
+	replicatesignal(e.Kill)
 else
-	SendCaption("Please wait around 20 seconds to die")
-	RemotesFolder.Underwater:FireServer(true)
+	i("Please wait around 20 seconds to die")
+	f.Underwater:FireServer(true)
 end
 
-LocalPlayer:GetAttributeChangedSignal("Alive"):Wait()
-SendCaption("Player has died, joining a new run...")
+e:GetAttributeChangedSignal("Alive"):Wait()
+i("Player has died, joining a new run...")
 
-RemotesFolder.PlayAgain:FireServer()
-QueueTeleport(TeleportCode)
+f.PlayAgain:FireServer()
+c(d)

@@ -13,7 +13,8 @@ local a = setmetatable({}, {
 
 local c = queue_on_teleport or queueonteleport
 local d = [==[
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()
+    -- it have some issue when you execute it twice or have it in autoexecute tho if you dont wanna have it in autoexecute delete that two lines and execute it 
+	-- loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()
 ]==]
 
 local e = a.Players.LocalPlayer

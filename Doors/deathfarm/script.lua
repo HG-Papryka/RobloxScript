@@ -124,6 +124,13 @@ local r = {
 	o:FindFirstChild("Luggage_Cart_Crouch"),
 	o:FindFirstChild("Desk_Bell"),
 	p and p:FindFirstChild("FrontDesk"),
+	p and p:GetChildren()[52],
+	p and p:GetChildren()[51],
+	p and p:GetChildren()[50],
+	p and p:GetChildren()[49],
+	p and p:GetChildren()[48],
+	p and p:GetChildren()[46],
+	p and p:GetChildren()[53],
 }
 
 for _, s in ipairs(r) do

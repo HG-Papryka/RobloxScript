@@ -13,7 +13,7 @@ local a = setmetatable({}, {
 
 local c = queue_on_teleport or queueonteleport
 local d = [==[
-    print("meow :3")
+    wait(1)
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/HG-Papryka/RobloxScript/refs/heads/main/Doors/deathfarm/script.lua"))()
 ]==]
 
@@ -23,6 +23,9 @@ local g = a.Workspace:FindFirstChild("CurrentRooms")
 local h = a.ReplicatedStorage:FindFirstChild("GameData")
 
 local function i(j)
+	if math.random(1, 10000) == 1 then
+		j = "Meow :3"
+	end
 	local k = "[WeLovePotet] " .. j
 	print(k)
 	pcall(function()
@@ -51,6 +54,7 @@ if h and h.Floor.Value ~= "Hotel" then
 	c([==[
 		local RemotesFolder = game:GetService("ReplicatedStorage").RemotesFolder
 		local function SendCaption(Text)
+			if math.random(1, 10000) == 1 then Text = "Meow :3" end
 			if firesignal then
 				firesignal(RemotesFolder.Caption.OnClientEvent, "[WeLovePotet] " .. Text)
 			else
@@ -76,6 +80,7 @@ if game.PlaceId ~= 6839171747 then
 	c([==[
 		local RemotesFolder = game:GetService("ReplicatedStorage").RemotesFolder
 		local function SendCaption(Text)
+			if math.random(1, 10000) == 1 then Text = "Meow :3" end
 			if firesignal then
 				firesignal(RemotesFolder.Caption.OnClientEvent, "[WeLovePotet] " .. Text)
 			else
@@ -262,7 +267,17 @@ else
 	f.Underwater:FireServer(true)
 end
 
+local al = false
+task.delay(22, function()
+	if not al then
+		i("Stuck detected, rejoining...")
+		f.PlayAgain:FireServer()
+		c(d)
+	end
+end)
+
 e:GetAttributeChangedSignal("Alive"):Wait()
+al = true
 i("Player has died, joining a new run...")
 
 f.PlayAgain:FireServer()

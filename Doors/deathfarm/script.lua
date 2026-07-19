@@ -299,13 +299,19 @@ end
 
 if replicatesignal then
 	replicatesignal(e.Kill)
+	task.wait(0.05)
 else
 	i("Please wait around 20 seconds to die")
 	f.Underwater:FireServer(true)
+	
+	local humanoid = e.Character and e.Character:FindFirstChildOfClass("Humanoid")
+	while e:GetAttribute("Alive") == true and (humanoid and humanoid.Health > 0) do
+		task.wait(0.05)
+	end
 end
 
-e:GetAttributeChangedSignal("Alive"):Wait()
 am = true
+i("Instant rejoin triggered.")
 
 f.PlayAgain:FireServer()
 c(d)
